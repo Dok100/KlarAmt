@@ -1,0 +1,29 @@
+# dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+
+# environment variables – NIEMALS committen
+.env
+.env.local
+.env.*.local
+
+# debug logs
+npm-debug.log*
+
+# OS
+.DS_Store
+
+# local-only Dateien (nicht für Git)
+_local/
+
+# Tesseract Sprachdaten (werden automatisch heruntergeladen)
+*.traineddata
+
+# TypeScript build info
+tsconfig.tsbuildinfo
+
+# Claude Code interne Dateien
+.claude/

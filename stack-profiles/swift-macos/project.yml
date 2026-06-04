@@ -1,0 +1,37 @@
+name: <PROJECT_NAME>
+options:
+  bundleIdPrefix: com.example
+configs:
+  Debug: debug
+  Release: release
+targets:
+  App:
+    type: application
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: Sources/App
+    settings:
+      base:
+        PRODUCT_NAME: <PROJECT_NAME>
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.<PROJECT_SLUG>
+        SWIFT_VERSION: "6.0"
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+        CURRENT_PROJECT_VERSION: 1
+        MARKETING_VERSION: 0.1.0
+        ENABLE_APP_SANDBOX: YES
+        ENABLE_HARDENED_RUNTIME: YES
+        INFOPLIST_KEY_NSHumanReadableCopyright: ""
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
+    scheme:
+      testTargets:
+        - AppTests
+
+  AppTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests/AppTests
+    dependencies:
+      - target: App

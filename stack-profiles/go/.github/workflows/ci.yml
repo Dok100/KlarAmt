@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - name: Abhaengigkeiten laden
+        run: go mod tidy
+      - name: Struktur pruefen
+        run: make check
+      - name: Lint
+        run: make lint
+      - name: Tests
+        run: make test
+      - name: Build
+        run: make build
