@@ -1,12 +1,12 @@
 # KlarAmt — Projektstatus
 
-**Letzte Aktualisierung:** 2026-06-04
+**Letzte Aktualisierung:** 2026-06-05
 
 ---
 
 ## Aktueller Stand
 
-**PROJ-1 abgeschlossen.** Der vollständige Kern-Analyse-Flow läuft lokal: Scan-PDF → pdftoppm → OCR → PII-Strip → Vorklassifikation → Claude API → Zod-Validierung → Fristberechnung → Ergebnis-Seite. Erster echter Test mit Einkommensteuerbescheid erfolgreich.
+**PROJ-1 abgeschlossen und live auf Vercel.** `klaramt-murex.vercel.app` läuft in Production. Analyse-Flow getestet mit echtem Einkommensteuerbescheid Finanzamt Heilbronn — Ergebnis korrekt (Ampel ROT, Fristen, Erklärung, Handlungshinweise).
 
 ---
 
@@ -29,9 +29,9 @@
 
 ## Was als nächstes kommt
 
-1. **Vercel-Deployment** — `pdftoppm` ist lokal verfügbar aber nicht auf Vercel. Für Scan-PDFs auf Vercel: entweder Claude Vision API (PDF-Seiten als Bilder direkt an Claude) oder Vercel Pro + `pdftoppm` via Layer. Für text-basierte PDFs (die meisten echten Behörden-PDFs) funktioniert pdf-parse auf Vercel.
-2. **PROJ-2: Antwortgenerator** — zweiter API-Call, Dreifach-Disclaimer, PDF-Export, Bearbeitungsmöglichkeit
-3. **Sprachwahlschalter auf der Ergebnis-Seite** verdrahten (Button ist sichtbar, löst aber noch keinen erneuten API-Call aus)
+1. **PROJ-2: Antwortgenerator** — zweiter API-Call, Dreifach-Disclaimer, PDF-Export, Bearbeitungsmöglichkeit
+2. **Sprachwahlschalter auf der Ergebnis-Seite** verdrahten (Button ist sichtbar, löst aber noch keinen erneuten API-Call aus)
+3. **GitHub → Vercel Auto-Deploy verbinden** — Vercel Dashboard → Settings → Git → GitHub autorisieren → Dok100/KlarAmt
 
 ---
 
@@ -39,12 +39,16 @@
 
 - Domain klaramt.app noch nicht registriert
 - Anthropic DPA vor öffentlichem Launch abschließen
-- `pdftoppm` auf Vercel: Lösung offen (Claude Vision API bevorzugt)
-- Debug-Logs (`console.error` für Zod-Fehler) noch im Code — vor Production entfernen
+- Debug-Logs (`console.error` für Zod-Fehler) noch im Code — vor öffentlichem Launch entfernen
+- GitHub → Vercel Auto-Deploy noch nicht verbunden (manueller Deploy per CLI funktioniert)
+- Domain klaramt.app noch nicht registriert
+- Anthropic DPA vor öffentlichem Launch abschließen
 
 ---
 
 ## Letzte Entscheidungen
 
-- Scan-PDF-Rendering: `pdftoppm` statt pdfjs-dist (zu viele Node.js-Inkompatibilitäten)
+- Scan-PDF und Bilder: direkt als `document`/`image`-Block an Claude Vision API — kein pdftoppm, kein tesseract.js
+- `pdf-parse` auf v1.1.1 gepinnt (v2 hat inkompatible class-basierte API)
+- `pdf-parse/lib/pdf-parse` direkt laden (Haupteinstieg lädt Test-PDF die auf Vercel fehlt)
 - Claude-Antwort: Backtick-Stripping nötig, weil Claude trotz Prompt-Anweisung manchmal Markdown-Wrapper setzt
