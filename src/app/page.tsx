@@ -125,10 +125,12 @@ export default function Home() {
   const [laedt, setLaedt] = useState(false);
   const [fehler, setFehler] = useState<string | null>(null);
   const [kontingentErschoepft, setKontingentErschoepft] = useState(false);
+  const [istMobil, setIstMobil] = useState(false);
 
   useEffect(() => {
     setConsentGegeben(hatConsent());
     setKontingentErschoepft(holeAnalysenZaehler() >= LIMIT);
+    setIstMobil(navigator.maxTouchPoints > 0);
   }, []);
 
   function consent() {
@@ -269,10 +271,12 @@ export default function Home() {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
-            <button onClick={() => fotoRef.current?.click()} style={S.btnPrimary}>
-              Brief fotografieren
-            </button>
-            <button onClick={() => pdfRef.current?.click()} style={S.btnSecondary}>
+            {istMobil && (
+              <button onClick={() => fotoRef.current?.click()} style={S.btnPrimary}>
+                Brief fotografieren
+              </button>
+            )}
+            <button onClick={() => pdfRef.current?.click()} style={istMobil ? S.btnSecondary : S.btnPrimary}>
               PDF hochladen
             </button>
           </div>
