@@ -40,23 +40,106 @@ interface ErgebnisData {
 }
 
 const AMPEL_CONFIG = {
-  rot: { bg: 'bg-red-50', border: 'border-red-300', text: 'text-red-700', kreis: 'bg-red-500', label: 'Handlung erforderlich' },
-  gelb: { bg: 'bg-yellow-50', border: 'border-yellow-300', text: 'text-yellow-700', kreis: 'bg-yellow-400', label: 'Handlungsoption vorhanden' },
-  gruen: { bg: 'bg-green-50', border: 'border-green-300', text: 'text-green-700', kreis: 'bg-green-500', label: 'Kein Handlungsbedarf' },
+  rot: {
+    bg: '#f7ece8',
+    border: '#e0b8aa',
+    text: '#b53d1f',
+    dot: '#b53d1f',
+    label: 'Handlung erforderlich',
+  },
+  gelb: {
+    bg: '#fdf4e0',
+    border: '#e0c878',
+    text: '#92660f',
+    dot: '#d4961a',
+    label: 'Handlungsoption vorhanden',
+  },
+  gruen: {
+    bg: '#eaf4ee',
+    border: '#9dcfb0',
+    text: '#2d6a4f',
+    dot: '#3a9e6f',
+    label: 'Kein Handlungsbedarf',
+  },
 };
 
-function Aufklappbar({ titel, children }: { titel: string; children: React.ReactNode }) {
-  const [offen, setOffen] = useState(false);
+function Wordmark() {
   return (
-    <div className="border border-gray-200 rounded-xl overflow-hidden">
+    <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: '1px' }}>
+      <span style={{
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontSize: '1.25rem',
+        fontWeight: 400,
+        color: '#1a1814',
+        letterSpacing: '-0.03em',
+      }}>
+        klaramt
+      </span>
+      <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#b53d1f', display: 'inline-block', marginBottom: 2, flexShrink: 0 }} />
+    </span>
+  );
+}
+
+function Card({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+  return (
+    <div style={{
+      background: '#faf8f4',
+      border: '1px solid #e0d8cc',
+      borderRadius: '12px',
+      padding: '1rem 1.125rem',
+      ...style,
+    }}>
+      {children}
+    </div>
+  );
+}
+
+function Label({ children }: { children: React.ReactNode }) {
+  return (
+    <p style={{ fontSize: '0.6875rem', color: '#9c9087', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 700, marginBottom: '0.375rem' }}>
+      {children}
+    </p>
+  );
+}
+
+function Aufklappbar({ titel, children, defaultOffen = false }: { titel: string; children: React.ReactNode; defaultOffen?: boolean }) {
+  const [offen, setOffen] = useState(defaultOffen);
+  return (
+    <div style={{ border: '1px solid #e0d8cc', borderRadius: '12px', overflow: 'hidden', background: '#faf8f4' }}>
       <button
         onClick={() => setOffen(!offen)}
-        className="w-full flex justify-between items-center px-5 py-4 text-left font-medium text-gray-800 hover:bg-gray-50 transition-colors"
+        style={{
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '1rem 1.125rem',
+          textAlign: 'left',
+          fontWeight: 600,
+          fontSize: '0.9375rem',
+          color: '#1a1814',
+          letterSpacing: '-0.01em',
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+        }}
       >
         {titel}
-        <span className="text-gray-400 text-lg">{offen ? '−' : '+'}</span>
+        <span style={{ color: '#9c9087', fontSize: '1.375rem', lineHeight: 1, fontWeight: 300, marginLeft: '0.75rem', flexShrink: 0 }}>
+          {offen ? '−' : '+'}
+        </span>
       </button>
-      {offen && <div className="px-5 pb-5 text-gray-700 text-sm space-y-3">{children}</div>}
+      {offen && (
+        <div style={{
+          padding: '0 1.125rem 1.125rem',
+          borderTop: '1px solid #e0d8cc',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.75rem',
+        }}>
+          {children}
+        </div>
+      )}
     </div>
   );
 }
@@ -64,17 +147,23 @@ function Aufklappbar({ titel, children }: { titel: string; children: React.React
 function FristCountdown({ frist }: { frist: FristErgebnis }) {
   if (frist.abgelaufen) {
     return (
-      <div className="bg-red-100 text-red-700 rounded-xl px-4 py-3 text-sm font-medium">
+      <div style={{ background: '#f7ece8', border: '1px solid #e0b8aa', borderRadius: '9px', padding: '0.6875rem 0.875rem', fontSize: '0.875rem', color: '#b53d1f', fontWeight: 600 }}>
         Frist abgelaufen am {frist.fristende}
       </div>
     );
   }
   const dringend = frist.verbleibende_tage <= 7;
   return (
-    <div className={`rounded-xl px-4 py-3 text-sm ${dringend ? 'bg-red-100 text-red-700' : 'bg-blue-50 text-blue-700'}`}>
-      <span className="font-bold text-lg">{frist.verbleibende_tage} Tage</span>
-      <span className="ml-2">bis zum geschätzten Fristende ({frist.fristende})</span>
-      <p className="text-xs mt-1 opacity-70">{frist.hinweis}</p>
+    <div style={{
+      background: dringend ? '#f7ece8' : '#f3ede1',
+      border: `1px solid ${dringend ? '#e0b8aa' : '#e0d8cc'}`,
+      borderRadius: '9px',
+      padding: '0.6875rem 0.875rem',
+      color: dringend ? '#b53d1f' : '#3d3530',
+    }}>
+      <span style={{ fontWeight: 700, fontSize: '1.25rem', letterSpacing: '-0.02em' }}>{frist.verbleibende_tage}</span>
+      <span style={{ fontSize: '0.875rem', marginLeft: '0.375rem' }}>Tage bis zum geschätzten Fristende ({frist.fristende})</span>
+      <p style={{ fontSize: '0.75rem', marginTop: '0.25rem', opacity: 0.65, lineHeight: 1.5 }}>{frist.hinweis}</p>
     </div>
   );
 }
@@ -94,82 +183,87 @@ export default function ErgebnisSeite() {
   const a = daten.analyse.analyse;
   const ampel = AMPEL_CONFIG[a.ampel.status];
 
-  // Fristen mit berechnetem Countdown (nur Einspruch/Widerspruch/Klage, nicht Zahlungen ohne frist_tage)
   const fristenMitCountdown = a.fristen
     .map((f, i) => ({ frist: f, berechnet: daten.analyse.berechnete_fristen[i] }))
     .filter(({ berechnet }) => berechnet !== null);
 
   return (
-    <main className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-lg mx-auto space-y-4">
+    <main style={{ minHeight: '100svh', background: '#f3ede1', paddingBottom: '3.5rem' }}>
 
-        {/* Header */}
-        <div className="flex items-center justify-between mb-2">
-          <h1 className="text-xl font-bold text-gray-900">KlarAmt</h1>
-          <button
-            onClick={() => router.push('/')}
-            className="text-sm text-blue-600 hover:underline"
-          >
-            Neuer Brief
-          </button>
-        </div>
+      {/* Header */}
+      <div style={{ maxWidth: '520px', margin: '0 auto', padding: '1.125rem 1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Wordmark />
+        <button
+          onClick={() => router.push('/')}
+          style={{ fontSize: '0.875rem', color: '#7a6e63', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500, textDecoration: 'underline', textUnderlineOffset: '3px' }}
+        >
+          Neuer Brief
+        </button>
+      </div>
+
+      <div style={{ maxWidth: '520px', margin: '0 auto', padding: '0 1.25rem', display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
 
         {/* Absender */}
-        <div className="bg-white rounded-xl border border-gray-200 px-5 py-4">
-          <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Absender</p>
-          <p className="font-semibold text-gray-900">{a.absender.behoerde}</p>
-          {a.absender.abteilung && <p className="text-sm text-gray-500">{a.absender.abteilung}</p>}
-          <p className="text-xs text-gray-400 mt-1">{a.dokumenttyp}</p>
-        </div>
+        <Card>
+          <Label>Absender</Label>
+          <p style={{ fontWeight: 700, fontSize: '1rem', color: '#1a1814', letterSpacing: '-0.015em', lineHeight: 1.3 }}>{a.absender.behoerde}</p>
+          {a.absender.abteilung && <p style={{ fontSize: '0.875rem', color: '#7a6e63', marginTop: '0.2rem' }}>{a.absender.abteilung}</p>}
+          <p style={{ fontSize: '0.75rem', color: '#9c9087', marginTop: '0.3rem' }}>{a.dokumenttyp}</p>
+        </Card>
 
         {/* Ampel */}
-        <div className={`rounded-xl border px-5 py-4 ${ampel.bg} ${ampel.border}`}>
-          <div className="flex items-center gap-3 mb-2">
-            <div className={`w-4 h-4 rounded-full ${ampel.kreis}`} />
-            <span className={`font-semibold ${ampel.text}`}>{ampel.label}</span>
+        <div style={{
+          background: ampel.bg,
+          border: `1.5px solid ${ampel.border}`,
+          borderRadius: '12px',
+          padding: '1rem 1.125rem',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <span style={{ width: 9, height: 9, borderRadius: '50%', background: ampel.dot, flexShrink: 0, display: 'inline-block' }} />
+            <span style={{ fontWeight: 700, fontSize: '0.9375rem', color: ampel.text, letterSpacing: '-0.01em' }}>{ampel.label}</span>
           </div>
-          <p className="text-sm text-gray-700">{a.zusammenfassung}</p>
-          <p className={`text-xs mt-2 ${ampel.text} opacity-80`}>{a.ampel.begruendung}</p>
+          <p style={{ fontSize: '0.9375rem', color: '#1a1814', fontWeight: 500, lineHeight: 1.55 }}>{a.zusammenfassung}</p>
+          <p style={{ fontSize: '0.8125rem', color: ampel.text, marginTop: '0.5rem', opacity: 0.85, lineHeight: 1.55 }}>{a.ampel.begruendung}</p>
         </div>
 
         {/* Frist-Countdowns */}
         {fristenMitCountdown.length > 0 && (
-          <div className="space-y-2">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4375rem' }}>
             {fristenMitCountdown.map(({ frist, berechnet }, i) => (
               <div key={i}>
-                <p className="text-xs text-gray-400 mb-1">{frist.beschreibung}</p>
+                <p style={{ fontSize: '0.75rem', color: '#9c9087', marginBottom: '0.25rem', paddingLeft: '0.125rem' }}>{frist.beschreibung}</p>
                 <FristCountdown frist={berechnet!} />
               </div>
             ))}
           </div>
         )}
 
-        {/* Zahlungsfristen (festes Datum) */}
+        {/* Zahlungsfristen */}
         {a.fristen.filter(f => f.frist_tage === null && f.bescheid_datum).map((f, i) => (
-          <div key={i} className="bg-white rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-700">
-            <span className="font-medium">{f.beschreibung}</span>
-            <span className="text-gray-400 ml-2">Fällig: {f.bescheid_datum}</span>
-          </div>
+          <Card key={i} style={{ padding: '0.75rem 1rem' }}>
+            <span style={{ fontWeight: 600, fontSize: '0.875rem', color: '#1a1814' }}>{f.beschreibung}</span>
+            <span style={{ color: '#9c9087', fontSize: '0.8125rem', marginLeft: '0.5rem' }}>Fällig: {f.bescheid_datum}</span>
+          </Card>
         ))}
 
         {/* OCR-Warnung */}
         {a.ocr_qualitaet.confidence !== 'hoch' && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3 text-sm text-yellow-700">
+          <div style={{ background: '#fdf4e0', border: '1px solid #e0c878', borderRadius: '10px', padding: '0.75rem 1rem', fontSize: '0.8125rem', color: '#92660f', lineHeight: 1.55 }}>
             Texterkennung eingeschränkt: {a.ocr_qualitaet.probleme}
           </div>
         )}
 
         {/* Erklärung */}
         <Aufklappbar titel="Erklärung — was steht da?">
-          <p>{a.erklaerung.sachverhalt}</p>
-          <p className="text-gray-500">{a.erklaerung.begruendung_behoerde}</p>
-          <p className="font-medium text-gray-800">{a.erklaerung.bedeutung_fuer_dich}</p>
+          <p style={{ fontSize: '0.875rem', color: '#3d3530', lineHeight: 1.7, paddingTop: '0.75rem' }}>{a.erklaerung.sachverhalt}</p>
+          <p style={{ fontSize: '0.875rem', color: '#7a6e63', lineHeight: 1.7 }}>{a.erklaerung.begruendung_behoerde}</p>
+          <p style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1a1814', lineHeight: 1.65 }}>{a.erklaerung.bedeutung_fuer_dich}</p>
           {a.erklaerung.rechtsgrundlagen.length > 0 && (
-            <div className="mt-2 space-y-2">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4375rem', marginTop: '0.25rem' }}>
               {a.erklaerung.rechtsgrundlagen.map((rg, i) => (
-                <div key={i} className="bg-gray-50 rounded-lg px-3 py-2">
-                  <span className="font-mono text-xs text-gray-500">{rg.paragraph}</span>
-                  <p className="text-sm mt-0.5">{rg.erklaerung}</p>
+                <div key={i} style={{ background: '#f3ede1', borderRadius: '8px', padding: '0.625rem 0.75rem' }}>
+                  <span style={{ fontFamily: '"SF Mono", "Fira Code", monospace', fontSize: '0.6875rem', color: '#7a6e63', fontWeight: 600 }}>{rg.paragraph}</span>
+                  <p style={{ fontSize: '0.8125rem', marginTop: '0.25rem', color: '#3d3530', lineHeight: 1.55 }}>{rg.erklaerung}</p>
                 </div>
               ))}
             </div>
@@ -178,15 +272,28 @@ export default function ErgebnisSeite() {
 
         {/* Handlungshinweise */}
         <Aufklappbar titel="Was kann ich tun?">
-          <div className="space-y-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', paddingTop: '0.75rem' }}>
             {a.handlungshinweise.map((h, i) => (
-              <div key={i} className="flex gap-3">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-200 text-gray-600 text-xs font-bold flex items-center justify-center">
+              <div key={i} style={{ display: 'flex', gap: '0.75rem' }}>
+                <span style={{
+                  flexShrink: 0,
+                  width: 22,
+                  height: 22,
+                  borderRadius: '50%',
+                  border: '1.5px solid #e0d8cc',
+                  color: '#7a6e63',
+                  fontSize: '0.6875rem',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginTop: 2,
+                }}>
                   {h.prioritaet}
                 </span>
                 <div>
-                  <p className="font-medium text-gray-800">{h.aktion}</p>
-                  <p className="text-gray-500 text-xs mt-0.5">{h.erklaerung}</p>
+                  <p style={{ fontWeight: 600, color: '#1a1814', fontSize: '0.875rem', lineHeight: 1.4, letterSpacing: '-0.005em' }}>{h.aktion}</p>
+                  <p style={{ color: '#7a6e63', fontSize: '0.8125rem', marginTop: '0.3rem', lineHeight: 1.65 }}>{h.erklaerung}</p>
                 </div>
               </div>
             ))}
@@ -195,45 +302,56 @@ export default function ErgebnisSeite() {
 
         {/* Eskalation */}
         {a.eskalation.beratung_empfohlen && (
-          <div className="bg-orange-50 border border-orange-200 rounded-xl px-5 py-4">
-            <p className="font-semibold text-orange-800 mb-1">Professionelle Beratung empfohlen</p>
-            <p className="text-sm text-orange-700 mb-2">{a.eskalation.begruendung}</p>
-            <p className="text-sm text-orange-700">{a.eskalation.beratungsstellen}</p>
+          <div style={{ background: '#fdf4e0', border: '1px solid #e0c070', borderRadius: '12px', padding: '1rem 1.125rem' }}>
+            <p style={{ fontWeight: 700, color: '#7a4a0f', fontSize: '0.9375rem', marginBottom: '0.375rem', letterSpacing: '-0.01em' }}>
+              Professionelle Beratung empfohlen
+            </p>
+            <p style={{ fontSize: '0.875rem', color: '#8a5910', lineHeight: 1.6, marginBottom: '0.5rem' }}>{a.eskalation.begruendung}</p>
+            <p style={{ fontSize: '0.875rem', color: '#8a5910', lineHeight: 1.6 }}>{a.eskalation.beratungsstellen}</p>
           </div>
         )}
 
-        {/* Antwortgenerator CTA oder Sperre */}
+        {/* Antwortgenerator */}
         {daten.antwortgenerierung.erlaubt ? (
-          <div className="bg-white border border-gray-200 rounded-xl px-5 py-4 text-center">
-            <p className="text-sm text-gray-500 mb-3">Musst du auf diesen Brief antworten?</p>
+          <Card style={{ textAlign: 'center', padding: '1.25rem' }}>
+            <p style={{ fontSize: '0.875rem', color: '#7a6e63', marginBottom: '0.875rem' }}>Musst du auf diesen Brief antworten?</p>
             <button
               disabled
-              className="w-full bg-blue-100 text-blue-400 font-semibold py-3 rounded-xl cursor-not-allowed"
+              style={{
+                width: '100%',
+                background: '#f3ede1',
+                color: '#b0a498',
+                fontWeight: 600,
+                fontSize: '0.9375rem',
+                padding: '0.875rem',
+                borderRadius: '10px',
+                border: '1px solid #e0d8cc',
+                cursor: 'not-allowed',
+                letterSpacing: '-0.01em',
+              }}
             >
               Antwortvorlage erstellen (kommt bald)
             </button>
-          </div>
+          </Card>
         ) : daten.antwortgenerierung.grund ? (
-          <div className="bg-gray-50 border border-gray-200 rounded-xl px-5 py-4 text-sm text-gray-600">
-            <p className="font-medium mb-1">Kein Antwortgenerator</p>
-            <p>{daten.antwortgenerierung.grund}</p>
+          <Card>
+            <p style={{ fontWeight: 600, color: '#1a1814', fontSize: '0.875rem', marginBottom: '0.375rem' }}>Kein Antwortgenerator</p>
+            <p style={{ fontSize: '0.875rem', color: '#3d3530', lineHeight: 1.6 }}>{daten.antwortgenerierung.grund}</p>
             {daten.antwortgenerierung.beratungsstellen && (
-              <p className="mt-2 text-gray-500">{daten.antwortgenerierung.beratungsstellen}</p>
+              <p style={{ fontSize: '0.875rem', color: '#7a6e63', marginTop: '0.5rem', lineHeight: 1.6 }}>{daten.antwortgenerierung.beratungsstellen}</p>
             )}
-          </div>
+          </Card>
         ) : null}
 
-        {/* Meta-Hinweise */}
         {daten.meta.textGekuerzt && (
-          <p className="text-xs text-center text-gray-400">
+          <p style={{ textAlign: 'center', fontSize: '0.75rem', color: '#9c9087' }}>
             Nur die ersten Seiten wurden analysiert (Dokument zu lang).
           </p>
         )}
 
-        {/* Disclaimer */}
-        <div className="text-xs text-center text-gray-400 pb-6">
+        <p style={{ textAlign: 'center', fontSize: '0.75rem', color: '#9c9087', lineHeight: 1.65, paddingTop: '0.5rem' }}>
           KlarAmt erklärt und formuliert — keine Rechtsberatung. Prüfe alle Angaben an deinem Original-Dokument.
-        </div>
+        </p>
       </div>
     </main>
   );

@@ -24,6 +24,97 @@ function hatConsent(): boolean {
   return localStorage.getItem(CONSENT_KEY) === '1';
 }
 
+function Wordmark({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
+  const fs = size === 'lg' ? '1.75rem' : size === 'sm' ? '1.125rem' : '1.375rem';
+  const dot = size === 'lg' ? 8 : size === 'sm' ? 5 : 6;
+  const mb = size === 'lg' ? 4 : size === 'sm' ? 2 : 3;
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: '1px' }}>
+      <span style={{
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontSize: fs,
+        fontWeight: 400,
+        color: '#1a1814',
+        letterSpacing: '-0.03em',
+      }}>
+        klaramt
+      </span>
+      <span style={{
+        width: dot,
+        height: dot,
+        borderRadius: '50%',
+        background: '#b53d1f',
+        display: 'inline-block',
+        marginBottom: mb,
+        flexShrink: 0,
+      }} />
+    </span>
+  );
+}
+
+const CONSENT_ITEMS = [
+  { n: '1', text: 'Dein Brief wird eingelesen' },
+  { n: '2', text: 'Steuernummern, IBANs und ähnliche Daten werden automatisch entfernt' },
+  { n: '3', text: 'Der anonymisierte Text wird analysiert (Anthropic Claude KI)' },
+  { n: '4', text: 'Nach der Analyse wird alles gelöscht. Wir speichern nichts.' },
+];
+
+const S = {
+  page: {
+    minHeight: '100svh',
+    background: '#f3ede1',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '1.5rem',
+  } as React.CSSProperties,
+  card: {
+    background: '#faf8f4',
+    border: '1px solid #e0d8cc',
+    borderRadius: '16px',
+    maxWidth: '420px',
+    width: '100%',
+    padding: '2.25rem 2rem',
+  } as React.CSSProperties,
+  tagline: {
+    color: '#7a6e63',
+    fontSize: '0.875rem',
+    marginTop: '0.375rem',
+    marginBottom: '2rem',
+    lineHeight: '1.4',
+  } as React.CSSProperties,
+  divider: {
+    height: '1px',
+    background: '#e0d8cc',
+    margin: '1.5rem 0',
+  } as React.CSSProperties,
+  btnPrimary: {
+    width: '100%',
+    background: '#1a1814',
+    color: '#f3ede1',
+    fontWeight: 600,
+    fontSize: '1rem',
+    padding: '0.9375rem',
+    borderRadius: '10px',
+    border: 'none',
+    cursor: 'pointer',
+    letterSpacing: '-0.01em',
+    transition: 'opacity 0.15s',
+  } as React.CSSProperties,
+  btnSecondary: {
+    width: '100%',
+    background: 'transparent',
+    color: '#3d3530',
+    fontWeight: 500,
+    fontSize: '0.9375rem',
+    padding: '0.875rem',
+    borderRadius: '10px',
+    border: '1.5px solid #e0d8cc',
+    cursor: 'pointer',
+    transition: 'border-color 0.15s',
+  } as React.CSSProperties,
+};
+
 export default function Home() {
   const router = useRouter();
   const fotoRef = useRef<HTMLInputElement>(null);
@@ -84,35 +175,44 @@ export default function Home() {
 
   if (!consentGegeben) {
     return (
-      <main className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 max-w-md w-full p-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">KlarAmt</h1>
-          <p className="text-gray-500 mb-8 text-sm">Behördenpost verstehen — in unter 3 Minuten</p>
+      <main style={S.page}>
+        <div style={S.card}>
+          <Wordmark size="md" />
+          <p style={S.tagline}>Behördenpost endlich verstehen</p>
 
-          <h2 className="font-semibold text-gray-800 mb-4">Was passiert mit deinem Brief?</h2>
+          <p style={{ color: '#1a1814', fontSize: '0.9375rem', fontWeight: 600, marginBottom: '1.125rem', letterSpacing: '-0.01em' }}>
+            Was passiert mit deinem Brief?
+          </p>
 
-          <ol className="space-y-4 mb-8">
-            {[
-              { icon: '📸', text: 'Dein Brief wird eingelesen' },
-              { icon: '🔒', text: 'Steuernummern, IBANs und ähnliche Daten werden automatisch entfernt' },
-              { icon: '🤖', text: 'Der anonymisierte Text wird analysiert (Anthropic Claude KI)' },
-              { icon: '🗑️', text: 'Nach der Analyse wird alles gelöscht. Wir speichern nichts.' },
-            ].map(({ icon, text }) => (
-              <li key={text} className="flex gap-3 items-start">
-                <span className="text-xl leading-none mt-0.5">{icon}</span>
-                <span className="text-gray-700 text-sm">{text}</span>
+          <ol style={{ listStyle: 'none', padding: 0, margin: '0 0 1.75rem 0', display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+            {CONSENT_ITEMS.map(({ n, text }) => (
+              <li key={n} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                <span style={{
+                  flexShrink: 0,
+                  width: '20px',
+                  height: '20px',
+                  borderRadius: '50%',
+                  border: '1.5px solid #e0d8cc',
+                  color: '#7a6e63',
+                  fontSize: '0.6875rem',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginTop: '2px',
+                }}>
+                  {n}
+                </span>
+                <span style={{ color: '#3d3530', fontSize: '0.875rem', lineHeight: '1.55' }}>{text}</span>
               </li>
             ))}
           </ol>
 
-          <p className="text-xs text-gray-400 mb-6">
+          <p style={{ color: '#9c9087', fontSize: '0.75rem', lineHeight: '1.65', marginBottom: '1.5rem' }}>
             Namen und Adressen werden nicht automatisch entfernt. Bitte keine hochsensiblen Daten hochladen. KlarAmt erklärt und formuliert — keine Rechtsberatung.
           </p>
 
-          <button
-            onClick={consent}
-            className="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl hover:bg-blue-700 transition-colors"
-          >
+          <button onClick={consent} style={S.btnPrimary}>
             Verstanden — Brief analysieren
           </button>
         </div>
@@ -121,25 +221,31 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 max-w-md w-full p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">KlarAmt</h1>
-        <p className="text-gray-500 mb-8 text-sm">Lade deinen Brief hoch — wir erklären was er bedeutet.</p>
+    <main style={S.page}>
+      <div style={S.card}>
+        <Wordmark size="md" />
+        <p style={S.tagline}>Lade deinen Brief hoch — wir erklären was er bedeutet.</p>
 
-        <div className="mb-6">
-          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">
+        <div style={{ marginBottom: '1.75rem' }}>
+          <p style={{ color: '#9c9087', fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.625rem' }}>
             Erklärung in
-          </label>
-          <div className="flex flex-wrap gap-2">
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4375rem' }}>
             {SPRACHEN.map((s) => (
               <button
                 key={s}
                 onClick={() => setSprache(s)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                  sprache === s
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
+                style={{
+                  padding: '0.375rem 0.875rem',
+                  borderRadius: '8px',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  border: sprache === s ? '1.5px solid #1a1814' : '1.5px solid #e0d8cc',
+                  background: sprache === s ? '#1a1814' : 'transparent',
+                  color: sprache === s ? '#f3ede1' : '#7a6e63',
+                  cursor: 'pointer',
+                  transition: 'all 0.12s',
+                }}
               >
                 {s}
               </button>
@@ -148,57 +254,46 @@ export default function Home() {
         </div>
 
         {laedt ? (
-          <div className="text-center py-10">
-            <div className="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
-            <p className="text-gray-600 font-medium">Brief wird analysiert…</p>
-            <p className="text-gray-400 text-sm mt-1">Das kann bis zu einer Minute dauern.</p>
+          <div style={{ textAlign: 'center', padding: '2.25rem 0' }}>
+            <div style={{
+              width: '32px',
+              height: '32px',
+              border: '2.5px solid #e0d8cc',
+              borderTopColor: '#1a1814',
+              borderRadius: '50%',
+              animation: 'spin 0.75s linear infinite',
+              margin: '0 auto 1rem',
+            }} />
+            <p style={{ color: '#3d3530', fontWeight: 600, fontSize: '0.9375rem', letterSpacing: '-0.01em' }}>Brief wird analysiert…</p>
+            <p style={{ color: '#9c9087', fontSize: '0.8125rem', marginTop: '0.3rem' }}>Das kann bis zu einer Minute dauern.</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            <button
-              onClick={() => fotoRef.current?.click()}
-              className="w-full bg-blue-600 text-white font-semibold py-4 rounded-xl hover:bg-blue-700 transition-colors text-lg"
-            >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
+            <button onClick={() => fotoRef.current?.click()} style={S.btnPrimary}>
               Brief fotografieren
             </button>
-            <button
-              onClick={() => pdfRef.current?.click()}
-              className="w-full bg-gray-100 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-200 transition-colors"
-            >
+            <button onClick={() => pdfRef.current?.click()} style={S.btnSecondary}>
               PDF hochladen
             </button>
           </div>
         )}
 
-        <input
-          ref={fotoRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-          onChange={onFileChange}
-        />
-        <input
-          ref={pdfRef}
-          type="file"
-          accept="application/pdf"
-          className="hidden"
-          onChange={onFileChange}
-        />
+        <input ref={fotoRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={onFileChange} />
+        <input ref={pdfRef} type="file" accept="application/pdf" className="hidden" onChange={onFileChange} />
 
         {fehler && (
-          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+          <div style={{ marginTop: '1rem', padding: '0.875rem 1rem', background: '#f7ece8', border: '1px solid #e8c4b8', borderRadius: '10px', color: '#b53d1f', fontSize: '0.875rem', lineHeight: '1.55' }}>
             {fehler}
           </div>
         )}
 
         {kontingentErschoepft && !laedt && (
-          <p className="mt-4 text-center text-xs text-gray-400">
+          <p style={{ marginTop: '1rem', textAlign: 'center', fontSize: '0.75rem', color: '#9c9087', lineHeight: '1.5' }}>
             3/3 kostenlose Analysen verbraucht. Briefe mit roter Ampel bleiben immer kostenlos.
           </p>
         )}
 
-        <p className="mt-6 text-center text-xs text-gray-400">
+        <p style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.75rem', color: '#9c9087' }}>
           KlarAmt erklärt und formuliert — keine Rechtsberatung.
         </p>
       </div>
