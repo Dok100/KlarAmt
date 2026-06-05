@@ -7,6 +7,8 @@ import { stripPII } from '@/lib/pii';
 import { erkenneDokumenttyp, classifyKeywords, formatVorklassifikation } from '@/lib/classifier';
 import { AnalyseSchema, verarbeiteFristen, istAntwortgenerierungErlaubt } from '@/lib/fristen';
 
+export const maxDuration = 60;
+
 const ANALYSE_SYSTEM_PROMPT = `Du bist KlarAmt, ein Experte für deutsche Behördenkorrespondenz. Du machst Behördenbriefe für Laien verständlich.
 
 Du erhältst:
@@ -116,94 +118,47 @@ REGELN:
    - dokumenttyp = "kein_behoerdenschreiben"
    - ampel.status = "gruen", risikokategorie = "niedrig"`;
 
-async function pdfSeitenAlsbilder(pdfBuffer: Buffer): Promise<Buffer[]> {
-  const { execFile } = await import('child_process');
-  const { promisify } = await import('util');
-  const { mkdtemp, readdir, readFile, rm } = await import('fs/promises');
-  const { join } = await import('path');
-  const { tmpdir } = await import('os');
-  const execFileAsync = promisify(execFile);
+type VisionBlock =
+  | { type: 'document'; source: { type: 'base64'; media_type: 'application/pdf'; data: string } }
+  | { type: 'image'; source: { type: 'base64'; media_type: 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp'; data: string } };
 
-  const tmpDir = await mkdtemp(join(tmpdir(), 'klaramt-pdf-'));
-  const inputPath = join(tmpDir, 'input.pdf');
-  const outputPrefix = join(tmpDir, 'seite');
+type Extraktion =
+  | { modus: 'text'; text: string }
+  | { modus: 'vision'; block: VisionBlock };
 
-  try {
-    await import('fs/promises').then(fs => fs.writeFile(inputPath, pdfBuffer));
-
-    // pdftoppm: PDF-Seiten als PNG, max 6 Seiten, 200 DPI
-    await execFileAsync('pdftoppm', [
-      '-png', '-r', '200', '-l', '6',
-      inputPath, outputPrefix,
-    ]);
-
-    const dateien = (await readdir(tmpDir))
-      .filter(f => f.endsWith('.png'))
-      .sort();
-
-    return await Promise.all(dateien.map(f => readFile(join(tmpDir, f))));
-  } finally {
-    await rm(tmpDir, { recursive: true, force: true });
-  }
-}
-
-async function ocrAufBild(bildBuffer: Buffer | Blob, worker: import('tesseract.js').Worker): Promise<string> {
-  const { data } = await worker.recognize(bildBuffer);
-  return data.text;
-}
-
-async function extrahiereText(file: File): Promise<{ text: string; ocrVerwendet: boolean }> {
+async function extrahiereInhalt(file: File): Promise<Extraktion> {
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
 
   if (file.type === 'application/pdf') {
-    // Schritt 1: Text-PDF direkt parsen
     try {
       const result = await pdfParse(buffer);
       if (result.text && result.text.trim().length > 50) {
-        return { text: result.text, ocrVerwendet: false };
+        return { modus: 'text', text: result.text };
       }
     } catch {
-      // Scan-PDF → kein Text eingebettet
+      // Scan-PDF → kein eingebetteter Text
     }
 
-    // Schritt 2: Scan-PDF → Seiten als Bilder rendern → OCR
-    try {
-      const { createWorker } = await import('tesseract.js');
-      const worker = await createWorker('deu');
-      try {
-        const bilder = await pdfSeitenAlsbilder(buffer);
-        const texte = await Promise.all(bilder.map(b => ocrAufBild(b, worker)));
-        const gesamtText = texte.join('\n\n');
-        if (gesamtText.trim().length > 20) {
-          return { text: gesamtText, ocrVerwendet: true };
-        }
-      } finally {
-        await worker.terminate();
-      }
-    } catch (e) {
-      console.error('PDF-Rendering fehlgeschlagen:', e);
-    }
+    // Scan-PDF → direkt als Dokument an Claude Vision
+    return {
+      modus: 'vision',
+      block: {
+        type: 'document',
+        source: { type: 'base64', media_type: 'application/pdf', data: buffer.toString('base64') },
+      },
+    };
   }
 
-  // Fotos: OCR direkt auf das Bild
-  const { createWorker } = await import('tesseract.js');
-  const worker = await createWorker('deu');
-
-  const ocrTimeout = new Promise<never>((_, reject) =>
-    setTimeout(() => reject(new Error('OCR Timeout')), 8000)
-  );
-
-  try {
-    const blob = new Blob([buffer], { type: file.type });
-    const { data } = await Promise.race([
-      worker.recognize(blob),
-      ocrTimeout,
-    ]);
-    return { text: data.text, ocrVerwendet: true };
-  } finally {
-    await worker.terminate();
-  }
+  // Bild (JPEG, PNG, etc.) → direkt an Claude Vision
+  const mediaType = file.type as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
+  return {
+    modus: 'vision',
+    block: {
+      type: 'image',
+      source: { type: 'base64', media_type: mediaType, data: buffer.toString('base64') },
+    },
+  };
 }
 
 export async function POST(req: NextRequest) {
@@ -216,43 +171,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ fehler: 'Keine Datei übermittelt.' }, { status: 400 });
     }
 
-    // Schicht 1a: Text extrahieren
-    let rawText: string;
-    let ocrVerwendet: boolean;
-    try {
-      ({ text: rawText, ocrVerwendet } = await extrahiereText(file));
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Unbekannter Fehler';
-      if (msg === 'OCR Timeout') {
-        return NextResponse.json({
-          fehler: 'Die Texterkennung hat zu lange gedauert. Bitte fotografiere den Brief erneut bei guter Beleuchtung oder lade eine PDF hoch.',
-        }, { status: 422 });
-      }
-      return NextResponse.json({ fehler: 'Der Text konnte nicht erkannt werden. Bitte als PDF hochladen oder erneut fotografieren.' }, { status: 422 });
-    }
+    const extraktion = await extrahiereInhalt(file);
 
-    if (!rawText || rawText.trim().length < 20) {
-      return NextResponse.json({
-        fehler: 'Der Text konnte nicht vollständig erkannt werden. Bitte als PDF hochladen oder erneut fotografieren.',
-      }, { status: 422 });
-    }
-
-    // Schicht 1b: PII entfernen
-    const saubererText = stripPII(rawText);
-
-    // Schicht 1c: Vorklassifikation
-    const dokumenttyp = erkenneDokumenttyp(saubererText);
-    const keywords = classifyKeywords(saubererText);
-    const vorklassifikation = formatVorklassifikation(dokumenttyp, keywords);
-
-    // Schicht 2: Claude API
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const model = process.env.CLAUDE_MODEL || 'claude-sonnet-4-6';
 
-    // Sehr lange Texte kürzen (ca. 8.000 Wörter)
-    const textFuerAnalyse = saubererText.split(/\s+/).slice(0, 8000).join(' ');
-    const textGekuerzt = saubererText.split(/\s+/).length > 8000;
+    let userMessageContent: Anthropic.MessageParam['content'];
+    let textGekuerzt = false;
 
-    const userPrompt = `Analysiere das folgende behördliche Dokument.
+    if (extraktion.modus === 'text') {
+      const saubererText = stripPII(extraktion.text);
+      const dokumenttyp = erkenneDokumenttyp(saubererText);
+      const keywords = classifyKeywords(saubererText);
+      const vorklassifikation = formatVorklassifikation(dokumenttyp, keywords);
+
+      const woerter = saubererText.split(/\s+/);
+      textGekuerzt = woerter.length > 8000;
+      const textFuerAnalyse = woerter.slice(0, 8000).join(' ');
+
+      userMessageContent = `Analysiere das folgende behördliche Dokument.
 
 VORKLASSIFIKATION (regelbasiert):
 ${vorklassifikation}
@@ -263,20 +200,28 @@ DOKUMENTTEXT:
 ---
 ${textFuerAnalyse}
 ---`;
+    } else {
+      userMessageContent = [
+        extraktion.block as Anthropic.ImageBlockParam | Anthropic.DocumentBlockParam,
+        {
+          type: 'text' as const,
+          text: `Analysiere das beigefügte behördliche Dokument.\n\nZIELSPRACHE FÜR ERKLÄRUNG: ${sprache}`,
+        },
+      ];
+    }
 
     const message = await client.messages.create({
-      model: process.env.CLAUDE_MODEL || 'claude-sonnet-4-6',
+      model,
       max_tokens: 4000,
       temperature: 0.1,
       system: ANALYSE_SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: userPrompt }],
+      messages: [{ role: 'user', content: userMessageContent }],
     });
 
     const claudeAntwort = message.content[0].type === 'text' ? message.content[0].text : '';
     // Claude wickelt manchmal JSON in ```json ... ``` ein — Backticks entfernen
     const rawJson = claudeAntwort.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
 
-    // Schicht 3a: Zod-Validierung
     let parsed;
     try {
       parsed = AnalyseSchema.parse(JSON.parse(rawJson));
@@ -288,16 +233,13 @@ ${textFuerAnalyse}
       }, { status: 500 });
     }
 
-    // Schicht 3b: Fristberechnung
     const mitFristen = verarbeiteFristen(parsed);
-
-    // Schicht 3c: Gate für Antwortgenerator
     const antwortGate = istAntwortgenerierungErlaubt(parsed);
 
     return NextResponse.json({
       analyse: mitFristen,
       antwortgenerierung: antwortGate,
-      meta: { ocrVerwendet, textGekuerzt },
+      meta: { ocrVerwendet: extraktion.modus === 'vision', textGekuerzt },
     });
   } catch (e) {
     console.error('Analyse-Fehler:', e);
