@@ -118,6 +118,7 @@ const S = {
 export default function Home() {
   const router = useRouter();
   const fotoRef = useRef<HTMLInputElement>(null);
+  const bildRef = useRef<HTMLInputElement>(null);
   const pdfRef = useRef<HTMLInputElement>(null);
 
   const [consentGegeben, setConsentGegeben] = useState(false);
@@ -271,18 +272,23 @@ export default function Home() {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
-            {istMobil && (
+            {istMobil ? (
               <button onClick={() => fotoRef.current?.click()} style={S.btnPrimary}>
                 Brief fotografieren
               </button>
+            ) : (
+              <button onClick={() => bildRef.current?.click()} style={S.btnPrimary}>
+                Bild hochladen
+              </button>
             )}
-            <button onClick={() => pdfRef.current?.click()} style={istMobil ? S.btnSecondary : S.btnPrimary}>
+            <button onClick={() => pdfRef.current?.click()} style={S.btnSecondary}>
               PDF hochladen
             </button>
           </div>
         )}
 
         <input ref={fotoRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={onFileChange} />
+        <input ref={bildRef} type="file" accept="image/*" className="hidden" onChange={onFileChange} />
         <input ref={pdfRef} type="file" accept="application/pdf" className="hidden" onChange={onFileChange} />
 
         {fehler && (
