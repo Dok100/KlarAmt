@@ -174,7 +174,7 @@ export async function POST(req: NextRequest) {
     const extraktion = await extrahiereInhalt(file);
 
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-    const model = process.env.CLAUDE_MODEL || 'claude-sonnet-4-6';
+    const model = process.env.CLAUDE_MODEL || 'claude-haiku-4-5-20251001';
 
     let userMessageContent: Anthropic.MessageParam['content'];
     let textGekuerzt = false;
@@ -214,7 +214,7 @@ ${textFuerAnalyse}
       model,
       max_tokens: 4000,
       temperature: 0.1,
-      system: ANALYSE_SYSTEM_PROMPT,
+      system: [{ type: 'text', text: ANALYSE_SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
       messages: [{ role: 'user', content: userMessageContent }],
     });
 
