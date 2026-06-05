@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
-// pdf-parse ist ein CommonJS-Modul ohne ESM-Default-Export
+// pdf-parse v1: lib direkt laden — Haupteinstieg lädt eine Test-PDF die auf Vercel fehlt
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require('pdf-parse') as (buf: Buffer) => Promise<{ text: string }>;
+const pdfParse = require('pdf-parse/lib/pdf-parse') as (buf: Buffer) => Promise<{ text: string }>;
 import { stripPII } from '@/lib/pii';
 import { erkenneDokumenttyp, classifyKeywords, formatVorklassifikation } from '@/lib/classifier';
 import { AnalyseSchema, verarbeiteFristen, istAntwortgenerierungErlaubt } from '@/lib/fristen';
