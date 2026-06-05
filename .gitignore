@@ -27,3 +27,4 @@ tsconfig.tsbuildinfo
 
 # Claude Code interne Dateien
 .claude/
+.vercel
