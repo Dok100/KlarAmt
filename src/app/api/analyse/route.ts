@@ -77,10 +77,12 @@ Analysiere das Dokument und liefere AUSSCHLIESSLICH ein JSON-Objekt zurück. Kei
 REGELN:
 
 1. AMPEL:
-   - ROT: Frist läuft ODER unmittelbare negative Konsequenzen.
-   - GELB: Handlungsoption, keine unmittelbare Pflicht.
-   - GRÜN: Rein informativ.
-   - IM ZWEIFEL IMMER ROT.
+   - ROT: Nur wenn der Nutzer AKTIV handeln muss — z.B. manuelle Überweisung ohne Lastschriftmandat, Frist die heute oder morgen abläuft, fehlende Unterlagen mit konkreten Konsequenzen.
+   - GELB: Zahlungen per Lastschrift (automatisch, nur Kontodeckung prüfen), möglicher Fristablauf (Zugangsdatum unbekannt), Prüfbedarf ohne unmittelbaren Handlungszwang.
+   - GRÜN: Rein informativ, keine Zahlungspflicht, keine Fristen.
+   - Steuerbescheid MIT Lastschriftmandat → IMMER GELB. Der Nutzer muss nicht selbst überweisen.
+   - IM ZWEIFEL GELB statt ROT. ROT ist für echte Notfälle reserviert, nicht für Standardbescheide.
+   - ampel.begruendung bei möglicherweise abgelaufener Einspruchsfrist: NIEMALS "Die Einspruchsfrist läuft." Stattdessen: "Die Einspruchsfrist beträgt einen Monat ab Bekanntgabe. Sie könnte bereits abgelaufen sein — bitte prüfe das tatsächliche Zugangsdatum."
 
 2. RISIKOKATEGORIE:
    - NIEDRIG: Infos, Bescheinigungen, positive Bewilligungen, Renteninformation.
@@ -100,10 +102,11 @@ REGELN:
    - ERLAUBT: "Du kannst fristwahrend Einspruch einlegen." / "Einspruch ist möglich."
    - VERBOTEN: "Lege Einspruch ein." / "Der Einspruch lohnt sich." / "Die Behörde hat einen Fehler gemacht."
    - Du zeigst Möglichkeiten auf. Du empfiehlst NICHT.
-   - Bei Steuerbescheiden mit Vorauszahlungen: Reihenfolge der Hinweise nach Dringlichkeit für den Nutzer:
-     1. Kontodeckung für die nächste Lastschrift prüfen (unmittelbar bevorstehend)
-     2. Herabsetzung der Vorauszahlungen: "Wenn dein Einkommen voraussichtlich niedriger ist als erwartet, kannst du beim Finanzamt eine Herabsetzung der Vorauszahlungen beantragen. Das ist kein Einspruch, sondern ein formloser Antrag." — antworttyp: "unterlagen_nachreichen"
-     3. Einspruchsfrist und optionale Prüfung der Berechnung.
+   - Bei Steuerbescheiden mit Vorauszahlungen, Reihenfolge nach Dringlichkeit:
+     1. Kontodeckung: "Prüfe, ob das Konto für die nächste Lastschrift ausreichend gedeckt ist."
+     2. Herabsetzung: "Wenn dein Einkommen voraussichtlich niedriger ist als erwartet, kannst du beim Finanzamt eine Herabsetzung der Vorauszahlungen beantragen. Das ist kein Einspruch, sondern ein formloser Antrag."
+     3. Einspruch: KEIN konkretes Datum nennen — das wird separat berechnet und angezeigt. Nur schreiben: "Die Einspruchsfrist beträgt einen Monat ab Bekanntgabe. Bitte prüfe das tatsächliche Zugangsdatum."
+   - Keine Textbausteine aus dem Bescheid übernehmen ("Das Finanzamt hat aktuelle gesetzliche Änderungen berücksichtigt" etc.) — für Laien wertlos.
 
 5. ESKALATION (immer bei risikokategorie "hoch"):
    - Asyl/Aufenthalt → Migrationsberatung oder Anwalt Migrationsrecht
@@ -130,7 +133,7 @@ REGELN:
    Enthält ein Bescheid GLEICHZEITIG eine Erstattung (Vorjahr) UND Vorauszahlungen (Folgejahr):
    - Zusammenfassung beginnt IMMER mit der Erstattung wenn vorhanden: "Für [Jahr] bekommst du [Erstattungsbetrag] Euro zurück."
    - NIEMALS die festgesetzte Steuer (z.B. "1.596 Euro Einkommensteuer") als Zahlungspflicht formulieren wenn es eine Erstattung gibt — das ist irreführend. Die festgesetzte Steuer ist eine Berechnungsgröße, kein Zahlungsbetrag.
-   - Zusammenfassung: Konkrete Daten nennen, kein Jargon. Korrekt: "Für 2024 bekommst du 99,32 Euro zurück. Die nächsten Zahlungen sind jeweils 391 Euro am 10.06., 10.09. und 10.12.2025." NIEMALS "quartalsweise" oder "vierteljährlich" in der Zusammenfassung — zu sperrig für Laien. Stattdessen: "jeweils [Betrag] am [Datum1], [Datum2] und [Datum3]."
+   - Zusammenfassung: Konkrete Daten und GESAMTBETRÄGE nennen — niemals die Einzelbestandteile (362 Euro ESt + 29 Euro KiSt). Die Aufschlüsselung gehört in die Tabelle. Korrekt: "Für 2024 bekommst du 99,32 Euro zurück. Danach bucht das Finanzamt voraussichtlich 391 Euro am 10.06., 10.09. und 10.12.2025 ab." NIEMALS "quartalsweise" — zu sperrig. Wenn 2025 und 2026 unterschiedliche Gesamtbeträge haben: beide nennen.
    - Falsch: "Für 2024 zahlst du 1.596 Euro Einkommensteuer" — klingt wie Schuld, ist aber Berechnungsgröße.
    - Falsch: Erstattung und Vorauszahlung gegeneinander aufrechnen.
    - Vorauszahlungen sind 4 Termine pro Jahr (10. März, 10. Juni, 10. September, 10. Dezember). NIEMALS "jeden Monat" oder "monatlich".
@@ -148,8 +151,9 @@ REGELN:
    - Vorauszahlungs-Fälligkeiten sind KEINE Einspruchsfristen — sie sind Zahlungstermine. Nicht als Einspruchsfrist codieren.
    - Fälligkeitstermine nach DATUM gruppieren. Pro Datum ein Eintrag, alle Steuerarten mit Betrag > 0 kombiniert.
    - Nur Termine NACH dem Bescheiddatum erfassen. Frühere Termine hat das Finanzamt bereits in die nächste Rate eingerechnet.
-   - Beschreibungsformat pro Eintrag: "Vorauszahlung [Jahr], [N]. Rate: [Betrag1] € Einkommensteuer + [Betrag2] € Kirchensteuer = [Gesamt] Euro"
-   - Wenn 2025 und 2026 unterschiedliche Beträge haben: separate Einträge mit korrekten Beträgen — nicht einfach denselben Betrag für alle Jahre annehmen.
+   - Beschreibungsformat pro Eintrag: "Vorauszahlung [Jahr]: [Betrag1] € Einkommensteuer + [Betrag2] € Kirchensteuer = [Gesamt] Euro"
+     KEINE Ratennummer in der Beschreibung ("2. Rate" etc.) — Nutzer sehen nur die zukünftigen Raten und verstehen "2. Rate" nicht ohne die fehlende "1. Rate".
+   - Wenn 2025 und 2026 unterschiedliche Beträge haben: separate Einträge mit korrekten Beträgen.
    - Steuerarten mit 0 Euro weglassen.`;
 
 type VisionBlock =
