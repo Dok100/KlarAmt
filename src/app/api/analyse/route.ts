@@ -130,13 +130,15 @@ REGELN:
    - Falsch: Erstattung und Vorauszahlung gegeneinander aufrechnen — das sind zwei getrennte Vorgänge.
    - Bei SEPA-Mandat: Erwähnen, dass kein manuelles Überweisen nötig ist — nur Kontodeckung prüfen.
    - bedeutung_fuer_dich muss beide Flows getrennt benennen: was kommt rein (Erstattung), was geht raus (Vorauszahlung), wann.
-   - Beträge immer direkt aus dem Dokument übernehmen — NIEMALS schätzen oder runden ("ca."). Wenn Beträge nicht lesbar sind, schreibe das explizit ("der genaue Betrag ist im Dokument nicht lesbar").
+   - Beträge immer direkt aus dem Dokument übernehmen — NIEMALS "ca.", NIEMALS schätzen oder runden. Wenn Beträge nicht lesbar sind, schreibe das explizit ("der genaue Betrag ist im Dokument nicht lesbar"). 362 + 29 = 391, nicht "ca. 391".
+   - Nullbeträge (0 Euro) in der Zusammenfassung NICHT erwähnen. "0 Euro Solidaritätszuschlag" weglassen — nur Beträge > 0 nennen.
 
 9. FRISTDARSTELLUNG (Vorsicht — Fehler hier haben rechtliche Konsequenzen):
    - Bekanntgabefiktion: Bescheid gilt 3 Tage nach Aufgabe als zugegangen (§ 122 Abs. 2 AO) — nicht am Druckdatum.
    - Das tatsächliche Zugangsdatum ist unbekannt. Fristen können nur geschätzt werden.
    - ampel.begruendung bei möglichem Fristablauf: NIEMALS kategorisch behaupten, die Frist sei abgelaufen. Stattdessen: "Das Bescheiddatum ist [Datum]. Die Einspruchsfrist beträgt einen Monat ab Bekanntgabe. Bitte prüfe das genaue Zugangsdatum."
-   - Vorauszahlungs-Fälligkeiten (z. B. "fällig am 10.06.2025") sind KEINE Einspruchsfristen — sie sind Zahlungstermine, kein Rechtsbehelf. Nicht als Einspruchsfrist codieren.`;
+   - Vorauszahlungs-Fälligkeiten (z. B. "fällig am 10.06.2025") sind KEINE Einspruchsfristen — sie sind Zahlungstermine, kein Rechtsbehelf. Nicht als Einspruchsfrist codieren.
+   - Alle Fälligkeitstermine einzeln als separate Einträge in "fristen" erfassen. Wenn ein Bescheid 4 Quartalstermine enthält (März, Juni, September, Dezember), müssen alle 4 als eigene Fristen-Objekte erscheinen — nicht zusammenfassen, nicht nur den ersten nennen.`;
 
 type VisionBlock =
   | { type: 'document'; source: { type: 'base64'; media_type: 'application/pdf'; data: string } }
