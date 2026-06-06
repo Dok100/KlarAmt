@@ -284,6 +284,21 @@ export default function Home() {
             <button onClick={() => pdfRef.current?.click()} style={S.btnSecondary}>
               PDF hochladen
             </button>
+            {istMobil && (
+              <div style={{ background: '#fdf4e0', border: '1px solid #e0c878', borderRadius: '10px', padding: '0.75rem 0.875rem', marginTop: '0.25rem' }}>
+                <p style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#92660f', marginBottom: '0.375rem' }}>Mehrseitiger Brief?</p>
+                <p style={{ fontSize: '0.75rem', color: '#7a5a10', lineHeight: 1.65 }}>
+                  Scanne alle Seiten als PDF — das geht direkt auf deinem Handy:
+                </p>
+                <ul style={{ fontSize: '0.75rem', color: '#7a5a10', lineHeight: 1.75, paddingLeft: '1rem', margin: '0.25rem 0 0' }}>
+                  <li><strong>iPhone:</strong> Notizen-App öffnen → neuen Text → Kamera-Symbol → „Dokument scannen"</li>
+                  <li><strong>Android:</strong> Google Drive App → Plus-Symbol → „Scannen"</li>
+                </ul>
+                <p style={{ fontSize: '0.75rem', color: '#7a5a10', lineHeight: 1.65, marginTop: '0.375rem' }}>
+                  Das ergibt ein PDF mit allen Seiten, das du hier hochladen kannst.
+                </p>
+              </div>
+            )}
           </div>
         )}
 

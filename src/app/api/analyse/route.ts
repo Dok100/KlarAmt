@@ -129,7 +129,7 @@ REGELN:
    - Korrekt: "Für 2024 bekommst du 99,32 Euro zurück. Gleichzeitig werden ab Juni 2025 quartalsweise 391 Euro per Lastschrift abgebucht."
    - Falsch: "Für 2024 zahlst du 1.596 Euro Einkommensteuer" — das klingt wie eine Schuld, ist aber die Steuerfestsetzung.
    - Falsch: Erstattung und Vorauszahlung gegeneinander aufrechnen — das sind zwei getrennte Vorgänge.
-   - Vorauszahlungen sind QUARTALSWEISE (nicht monatlich) — fällig am 10. März, 10. Juni, 10. September, 10. Dezember.
+   - Vorauszahlungen sind QUARTALSWEISE — fällig am 10. März, 10. Juni, 10. September, 10. Dezember. Das sind 4 Termine pro Jahr, NICHT monatlich. Schreibe NIEMALS "jeden Monat" oder "monatlich" für Vorauszahlungen — immer "quartalsweise" oder "vierteljährlich".
    - Lastschrift statt SEPA: Nutze immer "Lastschrift" oder "automatisch von deinem Konto abgebucht" — NIEMALS "SEPA". Das Wort kennen viele Nutzer nicht.
    - Bei Lastschriftmandat: "Das Finanzamt bucht den Betrag automatisch von deinem Konto ab. Du musst nichts selbst überweisen — stelle nur sicher, dass dein Konto gedeckt ist."
    - bedeutung_fuer_dich: Nur zukünftige Zahlungstermine (nach dem Bescheiddatum) erwähnen. Vergangene Termine nicht aufzählen — sie sind bereits verrechnet. Statt alle Termine aufzulisten: Nächsten Termin + Muster nennen ("ab [nächster Termin] quartalsweise [Betrag] Euro").

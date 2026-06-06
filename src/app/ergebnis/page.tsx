@@ -239,9 +239,12 @@ export default function ErgebnisSeite() {
           </div>
         )}
 
-        {/* Zahlungsfristen — nur zukünftige Termine, tabellarisch */}
+        {/* Zahlungsfristen — Termine nach Bescheiddatum, tabellarisch */}
         {(() => {
-          const zahlungen = a.fristen.filter(f => f.frist_tage === null && f.bescheid_datum && new Date(f.bescheid_datum) >= new Date());
+          // Filter gegen Bescheiddatum (nicht heute) — Dokument kann aus der Vergangenheit sein
+          const bescheidDatumStr = a.fristen.find(f => f.frist_tage !== null && f.bescheid_datum)?.bescheid_datum;
+          const bescheidDatum = bescheidDatumStr ? new Date(bescheidDatumStr) : new Date(0);
+          const zahlungen = a.fristen.filter(f => f.frist_tage === null && f.bescheid_datum && new Date(f.bescheid_datum) > bescheidDatum);
           if (zahlungen.length === 0) return null;
           const monate = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
           function formatDatum(iso: string) {
