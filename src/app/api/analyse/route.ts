@@ -130,6 +130,7 @@ REGELN:
    - Falsch: Erstattung und Vorauszahlung gegeneinander aufrechnen — das sind zwei getrennte Vorgänge.
    - Bei SEPA-Mandat: Erwähnen, dass kein manuelles Überweisen nötig ist — nur Kontodeckung prüfen.
    - bedeutung_fuer_dich muss beide Flows getrennt benennen: was kommt rein (Erstattung), was geht raus (Vorauszahlung), wann.
+   - Beträge immer direkt aus dem Dokument übernehmen — NIEMALS schätzen oder runden ("ca."). Wenn Beträge nicht lesbar sind, schreibe das explizit ("der genaue Betrag ist im Dokument nicht lesbar").
 
 9. FRISTDARSTELLUNG (Vorsicht — Fehler hier haben rechtliche Konsequenzen):
    - Bekanntgabefiktion: Bescheid gilt 3 Tage nach Aufgabe als zugegangen (§ 122 Abs. 2 AO) — nicht am Druckdatum.
