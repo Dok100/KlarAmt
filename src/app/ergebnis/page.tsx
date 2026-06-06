@@ -239,8 +239,8 @@ export default function ErgebnisSeite() {
           </div>
         )}
 
-        {/* Zahlungsfristen */}
-        {a.fristen.filter(f => f.frist_tage === null && f.bescheid_datum).map((f, i) => (
+        {/* Zahlungsfristen — nur zukünftige Termine anzeigen (vergangene wurden vom FA bereits verrechnet) */}
+        {a.fristen.filter(f => f.frist_tage === null && f.bescheid_datum && new Date(f.bescheid_datum) >= new Date()).map((f, i) => (
           <Card key={i} style={{ padding: '0.75rem 1rem' }}>
             <span style={{ fontWeight: 600, fontSize: '0.875rem', color: '#1a1814' }}>{f.beschreibung}</span>
             <span style={{ color: '#9c9087', fontSize: '0.8125rem', marginLeft: '0.5rem' }}>Fällig: {f.bescheid_datum}</span>

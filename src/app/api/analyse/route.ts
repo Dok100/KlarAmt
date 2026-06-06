@@ -139,7 +139,7 @@ REGELN:
    - ampel.begruendung bei möglichem Fristablauf: NIEMALS kategorisch behaupten, die Frist sei abgelaufen. Stattdessen: "Das Bescheiddatum ist [Datum]. Die Einspruchsfrist beträgt einen Monat ab Bekanntgabe. Bitte prüfe das genaue Zugangsdatum."
    - Vorauszahlungs-Fälligkeiten (z. B. "fällig am 10.06.2025") sind KEINE Einspruchsfristen — sie sind Zahlungstermine, kein Rechtsbehelf. Nicht als Einspruchsfrist codieren.
    - Fälligkeitstermine nach DATUM gruppieren, nicht nach Steuerart. Pro Fälligkeitsdatum genau EIN Fristen-Eintrag, der alle Steuerarten mit Betrag > 0 kombiniert.
-   - Korrekt bei 4 Quartalsterminen: 4 Einträge — einer pro Datum (10.03., 10.06., 10.09., 10.12.).
+   - Nur Termine aufnehmen, die NACH dem Bescheiddatum liegen. Termine die vor dem Bescheiddatum lagen, hat das Finanzamt bereits in die nächste fällige Rate eingerechnet — nicht als separate Einträge aufnehmen.
    - Beschreibung pro Eintrag: "Vorauszahlung [N]. Rate: [Betrag1] Euro Einkommensteuer + [Betrag2] Euro Kirchensteuer = [Gesamt] Euro"
    - Steuerarten mit 0 Euro NICHT in die Beschreibung aufnehmen (Solidaritätszuschlag = 0 → weglassen).
    - Falsch: Je ein separater Eintrag für ESt, Soli und KiSt pro Termin (macht 12 Einträge statt 4).`;
