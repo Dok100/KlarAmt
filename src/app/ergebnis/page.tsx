@@ -52,7 +52,7 @@ const AMPEL_CONFIG = {
     border: '#e0c878',
     text: '#92660f',
     dot: '#d4961a',
-    label: 'Handlungsoption vorhanden',
+    label: 'Bitte prüfen',
   },
   gruen: {
     bg: '#eaf4ee',
@@ -152,8 +152,8 @@ function formatDatum(iso: string): string {
 }
 
 function extrahiereBetrag(beschreibung: string): string | null {
-  // Komma-Dezimal (391,00) und Punkt-Tausend (1.391,00) unterstützen
-  const m = beschreibung.match(/=\s*([\d.,]+)\s*Euro/);
+  // "= 391 Euro" oder "= 391 €" am Ende der Beschreibung
+  const m = beschreibung.match(/=\s*([\d.,]+)\s*(?:Euro|€)/);
   return m ? m[1] + ' €' : null;
 }
 
@@ -162,10 +162,10 @@ function FristCountdown({ frist }: { frist: FristErgebnis }) {
     return (
       <div style={{ background: '#fdf4e0', border: '1px solid #e0c878', borderRadius: '9px', padding: '0.6875rem 0.875rem' }}>
         <p style={{ fontSize: '0.875rem', color: '#92660f', fontWeight: 600, lineHeight: 1.4 }}>
-          Einspruchsfrist wahrscheinlich abgelaufen — geschätztes Fristende: {formatDatum(frist.fristende)}
+          Einspruchsfrist möglicherweise abgelaufen — geschätztes Fristende: {formatDatum(frist.fristende)}
         </p>
         <p style={{ fontSize: '0.75rem', color: '#92660f', marginTop: '0.25rem', opacity: 0.85, lineHeight: 1.5 }}>
-          Bitte prüfe, wann du den Brief tatsächlich erhalten hast. Die Frist beginnt ab Bekanntgabe, nicht ab Druckdatum.
+          Bitte prüfe, wann du den Brief tatsächlich erhalten hast. Die Frist beginnt mit der Bekanntgabe, nicht zwingend mit dem Druckdatum.
         </p>
       </div>
     );
@@ -270,7 +270,7 @@ export default function ErgebnisSeite() {
               </div>
               {zahlungen.map((f, i) => {
                 const betrag = extrahiereBetrag(f.beschreibung);
-                const beschreibungKurz = f.beschreibung.replace(/\s*=\s*[\d.,]+\s*Euro.*$/, '').trim();
+                const beschreibungKurz = f.beschreibung.replace(/\s*=\s*[\d.,]+\s*(?:Euro|€).*$/, '').trim();
                 return (
                   <div key={i} style={{
                     display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '0.75rem',

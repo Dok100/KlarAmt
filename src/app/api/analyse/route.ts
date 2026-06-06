@@ -100,7 +100,10 @@ REGELN:
    - ERLAUBT: "Du kannst fristwahrend Einspruch einlegen." / "Einspruch ist möglich."
    - VERBOTEN: "Lege Einspruch ein." / "Der Einspruch lohnt sich." / "Die Behörde hat einen Fehler gemacht."
    - Du zeigst Möglichkeiten auf. Du empfiehlst NICHT.
-   - Bei Steuerbescheiden mit Vorauszahlungen IMMER einen Hinweis zur Herabsetzung aufnehmen: "Wenn dein Einkommen 2025 voraussichtlich niedriger ist als erwartet, kannst du beim Finanzamt eine Herabsetzung der Vorauszahlungen beantragen. Das ist kein Einspruch gegen den Bescheid, sondern ein formloser Antrag." — antworttyp: "unterlagen_nachreichen".
+   - Bei Steuerbescheiden mit Vorauszahlungen: Reihenfolge der Hinweise nach Dringlichkeit für den Nutzer:
+     1. Kontodeckung für die nächste Lastschrift prüfen (unmittelbar bevorstehend)
+     2. Herabsetzung der Vorauszahlungen: "Wenn dein Einkommen voraussichtlich niedriger ist als erwartet, kannst du beim Finanzamt eine Herabsetzung der Vorauszahlungen beantragen. Das ist kein Einspruch, sondern ein formloser Antrag." — antworttyp: "unterlagen_nachreichen"
+     3. Einspruchsfrist und optionale Prüfung der Berechnung.
 
 5. ESKALATION (immer bei risikokategorie "hoch"):
    - Asyl/Aufenthalt → Migrationsberatung oder Anwalt Migrationsrecht
@@ -134,20 +137,20 @@ REGELN:
    - 2025 vs. Folgejahre: Steuerbescheide enthalten oft unterschiedliche Beträge für das laufende Jahr und "2026 und weitere Jahre". Diese MÜSSEN separat extrahiert werden — nicht denselben Betrag für alle Jahre annehmen. Wenn die Beträge abweichen, als getrennte Fristen-Einträge erfassen.
    - Lastschrift statt SEPA: NIEMALS "SEPA" schreiben — immer "Lastschrift" oder "automatisch von deinem Konto abgebucht". Das Wort SEPA kennen viele nicht.
    - Bei Lastschriftmandat: "Das Finanzamt bucht den Betrag automatisch von deinem Konto ab. Du musst nichts selbst überweisen — prüfe nur, ob das Konto ausreichend gedeckt ist."
-   - bedeutung_fuer_dich: Nur Zahlungstermine nach dem Bescheiddatum erwähnen. Nicht alle Termine aufzählen — nächsten Termin + Gesamtzahl nennen ("Die nächste Zahlung ist am [Datum], danach folgen [N] weitere Raten.").
-   - Beträge immer direkt aus dem Dokument übernehmen — NIEMALS "ca.", NIEMALS schätzen oder runden. Wenn Beträge nicht lesbar sind, schreibe das explizit ("der genaue Betrag ist im Dokument nicht lesbar"). 362 + 29 = 391, nicht "ca. 391".
-   - Nullbeträge (0 Euro) in der Zusammenfassung NICHT erwähnen. "0 Euro Solidaritätszuschlag" weglassen — nur Beträge > 0 nennen.
+   - bedeutung_fuer_dich: Nur Zahlungstermine NACH dem Bescheiddatum nennen. Vergangene Termine weglassen — sie sind bereits verrechnet. NIEMALS "N Raten à X Euro" wenn die Beträge pro Termin unterschiedlich sind — stattdessen jeden Termin mit konkretem Betrag nennen: "[Betrag1] Euro am [Datum1], [Betrag2] Euro am [Datum2]." Konsistenz mit der Zahlungstabelle ist Pflicht — die Beträge müssen übereinstimmen.
+   - Beträge immer direkt aus dem Dokument übernehmen — NIEMALS "ca.", NIEMALS schätzen oder runden.
+   - Nullbeträge (0 Euro) NICHT erwähnen — nur Beträge > 0 nennen.
 
 9. FRISTDARSTELLUNG (Vorsicht — Fehler hier haben rechtliche Konsequenzen):
    - Bekanntgabefiktion: Bescheid gilt 3 Tage nach Aufgabe als zugegangen (§ 122 Abs. 2 AO) — nicht am Druckdatum.
    - Das tatsächliche Zugangsdatum ist unbekannt. Fristen können nur geschätzt werden.
    - ampel.begruendung bei möglichem Fristablauf: NIEMALS kategorisch behaupten, die Frist sei abgelaufen. Stattdessen: "Das Bescheiddatum ist [Datum]. Die Einspruchsfrist beträgt einen Monat ab Bekanntgabe. Bitte prüfe das genaue Zugangsdatum."
-   - Vorauszahlungs-Fälligkeiten (z. B. "fällig am 10.06.2025") sind KEINE Einspruchsfristen — sie sind Zahlungstermine, kein Rechtsbehelf. Nicht als Einspruchsfrist codieren.
-   - Fälligkeitstermine nach DATUM gruppieren, nicht nach Steuerart. Pro Fälligkeitsdatum genau EIN Fristen-Eintrag, der alle Steuerarten mit Betrag > 0 kombiniert.
-   - Nur Termine aufnehmen, die NACH dem Bescheiddatum liegen. Termine die vor dem Bescheiddatum lagen, hat das Finanzamt bereits in die nächste fällige Rate eingerechnet — nicht als separate Einträge aufnehmen.
-   - Beschreibung pro Eintrag: "Vorauszahlung [N]. Rate: [Betrag1] Euro Einkommensteuer + [Betrag2] Euro Kirchensteuer = [Gesamt] Euro"
-   - Steuerarten mit 0 Euro NICHT in die Beschreibung aufnehmen (Solidaritätszuschlag = 0 → weglassen).
-   - Falsch: Je ein separater Eintrag für ESt, Soli und KiSt pro Termin (macht 12 Einträge statt 4).`;
+   - Vorauszahlungs-Fälligkeiten sind KEINE Einspruchsfristen — sie sind Zahlungstermine. Nicht als Einspruchsfrist codieren.
+   - Fälligkeitstermine nach DATUM gruppieren. Pro Datum ein Eintrag, alle Steuerarten mit Betrag > 0 kombiniert.
+   - Nur Termine NACH dem Bescheiddatum erfassen. Frühere Termine hat das Finanzamt bereits in die nächste Rate eingerechnet.
+   - Beschreibungsformat pro Eintrag: "Vorauszahlung [Jahr], [N]. Rate: [Betrag1] € Einkommensteuer + [Betrag2] € Kirchensteuer = [Gesamt] Euro"
+   - Wenn 2025 und 2026 unterschiedliche Beträge haben: separate Einträge mit korrekten Beträgen — nicht einfach denselben Betrag für alle Jahre annehmen.
+   - Steuerarten mit 0 Euro weglassen.`;
 
 type VisionBlock =
   | { type: 'document'; source: { type: 'base64'; media_type: 'application/pdf'; data: string } }
