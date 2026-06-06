@@ -144,12 +144,29 @@ function Aufklappbar({ titel, children, defaultOffen = false }: { titel: string;
   );
 }
 
+const MONATE = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+
+function formatDatum(iso: string): string {
+  const [y, m, d] = iso.split('-');
+  return `${parseInt(d)}. ${MONATE[parseInt(m) - 1]} ${y}`;
+}
+
+function extrahiereBetrag(beschreibung: string): string | null {
+  // Komma-Dezimal (391,00) und Punkt-Tausend (1.391,00) unterstützen
+  const m = beschreibung.match(/=\s*([\d.,]+)\s*Euro/);
+  return m ? m[1] + ' €' : null;
+}
+
 function FristCountdown({ frist }: { frist: FristErgebnis }) {
   if (frist.abgelaufen) {
     return (
       <div style={{ background: '#fdf4e0', border: '1px solid #e0c878', borderRadius: '9px', padding: '0.6875rem 0.875rem' }}>
-        <p style={{ fontSize: '0.875rem', color: '#92660f', fontWeight: 600, lineHeight: 1.4 }}>Einspruchsfrist möglicherweise abgelaufen (geschätztes Ende: {frist.fristende})</p>
-        <p style={{ fontSize: '0.75rem', color: '#92660f', marginTop: '0.25rem', opacity: 0.85, lineHeight: 1.5 }}>Bitte prüfe das genaue Datum, an dem du den Brief erhalten hast. Die Frist beginnt ab Zugang — nicht ab Druckdatum.</p>
+        <p style={{ fontSize: '0.875rem', color: '#92660f', fontWeight: 600, lineHeight: 1.4 }}>
+          Einspruchsfrist wahrscheinlich abgelaufen — geschätztes Fristende: {formatDatum(frist.fristende)}
+        </p>
+        <p style={{ fontSize: '0.75rem', color: '#92660f', marginTop: '0.25rem', opacity: 0.85, lineHeight: 1.5 }}>
+          Bitte prüfe, wann du den Brief tatsächlich erhalten hast. Die Frist beginnt ab Bekanntgabe, nicht ab Druckdatum.
+        </p>
       </div>
     );
   }
@@ -241,32 +258,22 @@ export default function ErgebnisSeite() {
 
         {/* Zahlungsfristen — Termine nach Bescheiddatum, tabellarisch */}
         {(() => {
-          // Filter gegen Bescheiddatum (nicht heute) — Dokument kann aus der Vergangenheit sein
           const bescheidDatumStr = a.fristen.find(f => f.frist_tage !== null && f.bescheid_datum)?.bescheid_datum;
           const bescheidDatum = bescheidDatumStr ? new Date(bescheidDatumStr) : new Date(0);
           const zahlungen = a.fristen.filter(f => f.frist_tage === null && f.bescheid_datum && new Date(f.bescheid_datum) > bescheidDatum);
           if (zahlungen.length === 0) return null;
-          const monate = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
-          function formatDatum(iso: string) {
-            const [y, m, d] = iso.split('-');
-            return `${parseInt(d)}. ${monate[parseInt(m) - 1]} ${y}`;
-          }
-          function extrahiereBetrag(beschreibung: string): string | null {
-            const m = beschreibung.match(/=\s*([\d.]+)\s*Euro/);
-            return m ? m[1] + ' €' : null;
-          }
           return (
             <div style={{ background: '#faf8f4', border: '1px solid #e0d8cc', borderRadius: '12px', overflow: 'hidden' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', padding: '0.625rem 1rem', borderBottom: '1px solid #e0d8cc', background: '#f3ede1' }}>
                 <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9c9087', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Anstehende Zahlungen</span>
-                <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9c9087', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Betrag</span>
+                <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9c9087', textTransform: 'uppercase', letterSpacing: '0.07em', textAlign: 'right' }}>Betrag</span>
               </div>
               {zahlungen.map((f, i) => {
                 const betrag = extrahiereBetrag(f.beschreibung);
-                const beschreibungKurz = f.beschreibung.replace(/\s*=\s*[\d.]+\s*Euro/, '').trim();
+                const beschreibungKurz = f.beschreibung.replace(/\s*=\s*[\d.,]+\s*Euro.*$/, '').trim();
                 return (
                   <div key={i} style={{
-                    display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center',
+                    display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '0.75rem',
                     padding: '0.75rem 1rem',
                     borderBottom: i < zahlungen.length - 1 ? '1px solid #e0d8cc' : 'none',
                   }}>
@@ -274,9 +281,9 @@ export default function ErgebnisSeite() {
                       <p style={{ fontWeight: 600, fontSize: '0.875rem', color: '#1a1814', letterSpacing: '-0.01em' }}>{formatDatum(f.bescheid_datum!)}</p>
                       <p style={{ fontSize: '0.75rem', color: '#9c9087', marginTop: '0.15rem', lineHeight: 1.4 }}>{beschreibungKurz}</p>
                     </div>
-                    {betrag && (
-                      <span style={{ fontWeight: 700, fontSize: '1rem', color: '#1a1814', marginLeft: '1rem', whiteSpace: 'nowrap' }}>{betrag}</span>
-                    )}
+                    <span style={{ fontWeight: 700, fontSize: '1rem', color: '#1a1814', whiteSpace: 'nowrap', textAlign: 'right' }}>
+                      {betrag ?? '—'}
+                    </span>
                   </div>
                 );
               })}

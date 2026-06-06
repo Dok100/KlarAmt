@@ -291,7 +291,7 @@ export default function Home() {
                   Scanne alle Seiten als PDF — das geht direkt auf deinem Handy:
                 </p>
                 <ul style={{ fontSize: '0.75rem', color: '#7a5a10', lineHeight: 1.75, paddingLeft: '1rem', margin: '0.25rem 0 0' }}>
-                  <li><strong>iPhone:</strong> Notizen-App öffnen → neuen Text → Kamera-Symbol → „Dokument scannen"</li>
+                  <li><strong>iPhone:</strong> Notizen-App öffnen → neuen Text → Büroklammer-Symbol → „Dokument scannen"</li>
                   <li><strong>Android:</strong> Google Drive App → Plus-Symbol → „Scannen"</li>
                 </ul>
                 <p style={{ fontSize: '0.75rem', color: '#7a5a10', lineHeight: 1.65, marginTop: '0.375rem' }}>
