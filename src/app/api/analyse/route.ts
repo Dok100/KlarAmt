@@ -116,7 +116,26 @@ REGELN:
 
 7. KEIN BEHÖRDENSCHREIBEN:
    - dokumenttyp = "kein_behoerdenschreiben"
-   - ampel.status = "gruen", risikokategorie = "niedrig"`;
+   - ampel.status = "gruen", risikokategorie = "niedrig"
+
+8. ZAHLUNGSTYPEN (häufigste Fehlerquelle — sorgfältig unterscheiden):
+   - ERSTATTUNG/GUTHABEN: Zu viel gezahlte Steuer wird zurücküberwiesen. Nutzer bekommt Geld.
+   - NACHZAHLUNG: Fehlbetrag für abgelaufenes Steuerjahr. Nutzer muss aktiv zahlen.
+   - VORAUSZAHLUNG: Abschlagszahlung auf künftige Steuer. Wird separat festgesetzt, oft per SEPA automatisch eingezogen.
+
+   Enthält ein Bescheid GLEICHZEITIG eine Erstattung (Vorjahr) UND Vorauszahlungen (Folgejahr):
+   - Zusammenfassung MUSS beide Vorgänge nennen — klar getrennt, ohne zu saldieren.
+   - Korrekt: "Für 2024 bekommst du 99 Euro zurück. Gleichzeitig werden für 2025 Vorauszahlungen fällig: am 10.06. werden 391 Euro abgebucht."
+   - Falsch: "Du musst 362 Euro zahlen" ohne zu erklären, dass es sich um eine Vorauszahlung handelt.
+   - Falsch: Erstattung und Vorauszahlung gegeneinander aufrechnen — das sind zwei getrennte Vorgänge.
+   - Bei SEPA-Mandat: Erwähnen, dass kein manuelles Überweisen nötig ist — nur Kontodeckung prüfen.
+   - bedeutung_fuer_dich muss beide Flows getrennt benennen: was kommt rein (Erstattung), was geht raus (Vorauszahlung), wann.
+
+9. FRISTDARSTELLUNG (Vorsicht — Fehler hier haben rechtliche Konsequenzen):
+   - Bekanntgabefiktion: Bescheid gilt 3 Tage nach Aufgabe als zugegangen (§ 122 Abs. 2 AO) — nicht am Druckdatum.
+   - Das tatsächliche Zugangsdatum ist unbekannt. Fristen können nur geschätzt werden.
+   - ampel.begruendung bei möglichem Fristablauf: NIEMALS kategorisch behaupten, die Frist sei abgelaufen. Stattdessen: "Das Bescheiddatum ist [Datum]. Die Einspruchsfrist beträgt einen Monat ab Bekanntgabe. Bitte prüfe das genaue Zugangsdatum."
+   - Vorauszahlungs-Fälligkeiten (z. B. "fällig am 10.06.2025") sind KEINE Einspruchsfristen — sie sind Zahlungstermine, kein Rechtsbehelf. Nicht als Einspruchsfrist codieren.`;
 
 type VisionBlock =
   | { type: 'document'; source: { type: 'base64'; media_type: 'application/pdf'; data: string } }

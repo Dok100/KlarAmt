@@ -147,8 +147,9 @@ function Aufklappbar({ titel, children, defaultOffen = false }: { titel: string;
 function FristCountdown({ frist }: { frist: FristErgebnis }) {
   if (frist.abgelaufen) {
     return (
-      <div style={{ background: '#f7ece8', border: '1px solid #e0b8aa', borderRadius: '9px', padding: '0.6875rem 0.875rem', fontSize: '0.875rem', color: '#b53d1f', fontWeight: 600 }}>
-        Frist abgelaufen am {frist.fristende}
+      <div style={{ background: '#fdf4e0', border: '1px solid #e0c878', borderRadius: '9px', padding: '0.6875rem 0.875rem' }}>
+        <p style={{ fontSize: '0.875rem', color: '#92660f', fontWeight: 600, lineHeight: 1.4 }}>Einspruchsfrist möglicherweise abgelaufen (geschätztes Ende: {frist.fristende})</p>
+        <p style={{ fontSize: '0.75rem', color: '#92660f', marginTop: '0.25rem', opacity: 0.85, lineHeight: 1.5 }}>Bitte prüfe das genaue Datum, an dem du den Brief erhalten hast. Die Frist beginnt ab Zugang — nicht ab Druckdatum.</p>
       </div>
     );
   }
