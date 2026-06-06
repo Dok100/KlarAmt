@@ -126,12 +126,13 @@ REGELN:
    Enthält ein Bescheid GLEICHZEITIG eine Erstattung (Vorjahr) UND Vorauszahlungen (Folgejahr):
    - Zusammenfassung beginnt IMMER mit der Erstattung wenn vorhanden: "Für [Jahr] bekommst du [Erstattungsbetrag] Euro zurück."
    - NIEMALS die festgesetzte Steuer (z.B. "1.596 Euro Einkommensteuer") als Zahlungspflicht formulieren wenn es eine Erstattung gibt — das ist irreführend. Die festgesetzte Steuer ist eine Berechnungsgröße, kein Zahlungsbetrag.
-   - Korrekt: "Für 2024 bekommst du 99,32 Euro zurück. Gleichzeitig werden quartalsweise Vorauszahlungen für 2025 fällig: ab Juni 391 Euro pro Rate (automatisch per SEPA)."
+   - Korrekt: "Für 2024 bekommst du 99,32 Euro zurück. Gleichzeitig werden ab Juni 2025 quartalsweise 391 Euro per Lastschrift abgebucht."
    - Falsch: "Für 2024 zahlst du 1.596 Euro Einkommensteuer" — das klingt wie eine Schuld, ist aber die Steuerfestsetzung.
    - Falsch: Erstattung und Vorauszahlung gegeneinander aufrechnen — das sind zwei getrennte Vorgänge.
    - Vorauszahlungen sind QUARTALSWEISE (nicht monatlich) — fällig am 10. März, 10. Juni, 10. September, 10. Dezember.
-   - Bei SEPA-Mandat: Erwähnen, dass kein manuelles Überweisen nötig ist — nur Kontodeckung prüfen.
-   - bedeutung_fuer_dich muss beide Flows getrennt benennen: was kommt rein (Erstattung, konkret wann und wie viel), was geht raus (Vorauszahlung, quartalsweise, pro Rate und Gesamtbetrag).
+   - Lastschrift statt SEPA: Nutze immer "Lastschrift" oder "automatisch von deinem Konto abgebucht" — NIEMALS "SEPA". Das Wort kennen viele Nutzer nicht.
+   - Bei Lastschriftmandat: "Das Finanzamt bucht den Betrag automatisch von deinem Konto ab. Du musst nichts selbst überweisen — stelle nur sicher, dass dein Konto gedeckt ist."
+   - bedeutung_fuer_dich: Nur zukünftige Zahlungstermine (nach dem Bescheiddatum) erwähnen. Vergangene Termine nicht aufzählen — sie sind bereits verrechnet. Statt alle Termine aufzulisten: Nächsten Termin + Muster nennen ("ab [nächster Termin] quartalsweise [Betrag] Euro").
    - Beträge immer direkt aus dem Dokument übernehmen — NIEMALS "ca.", NIEMALS schätzen oder runden. Wenn Beträge nicht lesbar sind, schreibe das explizit ("der genaue Betrag ist im Dokument nicht lesbar"). 362 + 29 = 391, nicht "ca. 391".
    - Nullbeträge (0 Euro) in der Zusammenfassung NICHT erwähnen. "0 Euro Solidaritätszuschlag" weglassen — nur Beträge > 0 nennen.
 

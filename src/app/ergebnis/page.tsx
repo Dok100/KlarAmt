@@ -239,13 +239,47 @@ export default function ErgebnisSeite() {
           </div>
         )}
 
-        {/* Zahlungsfristen — nur zukünftige Termine anzeigen (vergangene wurden vom FA bereits verrechnet) */}
-        {a.fristen.filter(f => f.frist_tage === null && f.bescheid_datum && new Date(f.bescheid_datum) >= new Date()).map((f, i) => (
-          <Card key={i} style={{ padding: '0.75rem 1rem' }}>
-            <span style={{ fontWeight: 600, fontSize: '0.875rem', color: '#1a1814' }}>{f.beschreibung}</span>
-            <span style={{ color: '#9c9087', fontSize: '0.8125rem', marginLeft: '0.5rem' }}>Fällig: {f.bescheid_datum}</span>
-          </Card>
-        ))}
+        {/* Zahlungsfristen — nur zukünftige Termine, tabellarisch */}
+        {(() => {
+          const zahlungen = a.fristen.filter(f => f.frist_tage === null && f.bescheid_datum && new Date(f.bescheid_datum) >= new Date());
+          if (zahlungen.length === 0) return null;
+          const monate = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+          function formatDatum(iso: string) {
+            const [y, m, d] = iso.split('-');
+            return `${parseInt(d)}. ${monate[parseInt(m) - 1]} ${y}`;
+          }
+          function extrahiereBetrag(beschreibung: string): string | null {
+            const m = beschreibung.match(/=\s*([\d.]+)\s*Euro/);
+            return m ? m[1] + ' €' : null;
+          }
+          return (
+            <div style={{ background: '#faf8f4', border: '1px solid #e0d8cc', borderRadius: '12px', overflow: 'hidden' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', padding: '0.625rem 1rem', borderBottom: '1px solid #e0d8cc', background: '#f3ede1' }}>
+                <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9c9087', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Anstehende Zahlungen</span>
+                <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9c9087', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Betrag</span>
+              </div>
+              {zahlungen.map((f, i) => {
+                const betrag = extrahiereBetrag(f.beschreibung);
+                const beschreibungKurz = f.beschreibung.replace(/\s*=\s*[\d.]+\s*Euro/, '').trim();
+                return (
+                  <div key={i} style={{
+                    display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center',
+                    padding: '0.75rem 1rem',
+                    borderBottom: i < zahlungen.length - 1 ? '1px solid #e0d8cc' : 'none',
+                  }}>
+                    <div>
+                      <p style={{ fontWeight: 600, fontSize: '0.875rem', color: '#1a1814', letterSpacing: '-0.01em' }}>{formatDatum(f.bescheid_datum!)}</p>
+                      <p style={{ fontSize: '0.75rem', color: '#9c9087', marginTop: '0.15rem', lineHeight: 1.4 }}>{beschreibungKurz}</p>
+                    </div>
+                    {betrag && (
+                      <span style={{ fontWeight: 700, fontSize: '1rem', color: '#1a1814', marginLeft: '1rem', whiteSpace: 'nowrap' }}>{betrag}</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
 
         {/* OCR-Warnung */}
         {a.ocr_qualitaet.confidence !== 'hoch' && (
