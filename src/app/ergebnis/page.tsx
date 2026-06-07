@@ -260,12 +260,16 @@ export default function ErgebnisSeite() {
         {(() => {
           const bescheidDatumStr = a.fristen.find(f => f.frist_tage !== null && f.bescheid_datum)?.bescheid_datum;
           const bescheidDatum = bescheidDatumStr ? new Date(bescheidDatumStr) : new Date(0);
-          const zahlungen = a.fristen.filter(f => f.frist_tage === null && f.bescheid_datum && new Date(f.bescheid_datum) > bescheidDatum);
+          const zahlungen = a.fristen.filter(f =>
+            f.frist_tage === null && f.bescheid_datum &&
+            new Date(f.bescheid_datum) > bescheidDatum &&
+            extrahiereBetrag(f.beschreibung) !== null  // nur echte Zahlungen mit Betrag zeigen
+          );
           if (zahlungen.length === 0) return null;
           return (
             <div style={{ background: '#faf8f4', border: '1px solid #e0d8cc', borderRadius: '12px', overflow: 'hidden' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', padding: '0.625rem 1rem', borderBottom: '1px solid #e0d8cc', background: '#f3ede1' }}>
-                <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9c9087', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Anstehende Zahlungen</span>
+                <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9c9087', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Zahlungen laut Bescheid</span>
                 <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9c9087', textTransform: 'uppercase', letterSpacing: '0.07em', textAlign: 'right' }}>Betrag</span>
               </div>
               {zahlungen.map((f, i) => {

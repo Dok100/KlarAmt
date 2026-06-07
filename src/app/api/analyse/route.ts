@@ -168,7 +168,12 @@ REGELN:
       b) Direktzahlung an Dritte (z.B. Miete direkt an Vermieter/Wohnungsbaugesellschaft)
     - bedeutung_fuer_dich MUSS formulieren: "Von den [Gesamt] Euro gehen [X] Euro direkt an [Vermieter]. Auf dein Konto kommen je nach Monat etwa [Minimum] bis [Maximum] Euro."
     - Betragsrange: ALLE Auszahlungsbeträge aus dem Dokument prüfen und korrekt übernehmen — niedrigsten und höchsten Betrag nennen. Nicht erfinden oder schätzen.
-    - Wenn monatliche Auszahlungsbeträge variieren: jeden Zeitraum als eigenen Fristeneintrag (typ: "zahlung") mit dem Startdatum des Zeitraums.
+    - Wenn monatliche Auszahlungsbeträge variieren: jeden Zeitraum als eigenen Fristeneintrag (typ: "zahlung") mit dem Startdatum des Zeitraums. Direktzahlung an Dritte (Vermieter) als separaten Eintrag.
+    - PFLICHTFORMAT für alle Zahlungseinträge: Beschreibung MUSS mit "= [Betrag] Euro" enden, damit der Betrag rechts in der Tabelle angezeigt werden kann. Beispiele:
+      "Auszahlung Januar 2023 auf dein Konto = 674,92 Euro"
+      "Auszahlung März–Juli 2023 auf dein Konto = 654,92 Euro"
+      "Direktzahlung Miete an Wohnungsbaugesellschaft = 990,00 Euro"
+    - WEITERBEWILLIGUNGSANTRAG: NICHT als Zahlungsfristeneintrag — als Handlungshinweis, nicht in die Zahlungstabelle.
     - Sondermonate: Februar und August können bei Familien mit Kindern wegen Schulbedarf höhere Beträge haben — wenn erkennbar, erwähnen.
     - KONTODECKUNG: Bei Leistungsempfängern (Bürgergeld, Wohngeld) NIEMALS "Kontodeckung prüfen" als Handlungshinweis — der Nutzer EMPFÄNGT Zahlungen, er zahlt nicht. Kontodeckungs-Hinweise nur bei Lastschriften und Vorauszahlungen.
 
