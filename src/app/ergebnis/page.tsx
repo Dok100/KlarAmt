@@ -256,14 +256,9 @@ export default function ErgebnisSeite() {
           </div>
         )}
 
-        {/* Zahlungsfristen — Termine nach Bescheiddatum, tabellarisch */}
+        {/* Zahlungsfristen — tabellarisch, Datumsfilterung übernimmt Claude per Prompt */}
         {(() => {
-          const bescheidDatumStr = a.fristen.find(f => f.frist_tage !== null && f.bescheid_datum)?.bescheid_datum;
-          const bescheidDatum = bescheidDatumStr ? new Date(bescheidDatumStr) : new Date(0);
-          const zahlungen = a.fristen.filter(f =>
-            f.frist_tage === null && f.bescheid_datum &&
-            new Date(f.bescheid_datum) > bescheidDatum
-          );
+          const zahlungen = a.fristen.filter(f => f.frist_tage === null && f.bescheid_datum);
           if (zahlungen.length === 0) return null;
           return (
             <div style={{ background: '#faf8f4', border: '1px solid #e0d8cc', borderRadius: '12px', overflow: 'hidden' }}>
