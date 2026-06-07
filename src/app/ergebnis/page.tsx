@@ -262,8 +262,7 @@ export default function ErgebnisSeite() {
           const bescheidDatum = bescheidDatumStr ? new Date(bescheidDatumStr) : new Date(0);
           const zahlungen = a.fristen.filter(f =>
             f.frist_tage === null && f.bescheid_datum &&
-            new Date(f.bescheid_datum) > bescheidDatum &&
-            extrahiereBetrag(f.beschreibung) !== null  // nur echte Zahlungen mit Betrag zeigen
+            new Date(f.bescheid_datum) > bescheidDatum
           );
           if (zahlungen.length === 0) return null;
           return (

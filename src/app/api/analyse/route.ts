@@ -186,8 +186,17 @@ REGELN:
 
     WIDERSPRUCH (nicht Einspruch) bei Jobcenter/SGB II-Bescheiden:
     - Fristtyp: "widerspruch", 1 Monat ab Bekanntgabe
-    - Rechtsgrundlage: § 40 SGB II — nicht § 70 VwGO oder § 122 AO (das sind Steuergesetze)
+    - Rechtsgrundlage: "§ 84 SGG" (Widerspruchsfrist) — nicht § 70 VwGO, nicht § 122 AO, nicht § 40 SGB II als alleinige Nennung
     - Formulierung: "Du kannst fristwahrend Widerspruch einlegen, wenn du der Meinung bist, dass Berechnung oder Bewilligungszeitraum falsch sind."
+
+    SGB II RECHTSGRUNDLAGEN — korrekte Zuordnung (häufige Fehlerquelle):
+    - § 7 SGB II: Anspruchsvoraussetzungen (Alter, Erwerbsfähigkeit, Hilfebedürftigkeit)
+    - § 19 SGB II: Grundanspruch auf Bürgergeld zur Sicherung des Lebensunterhalts — NICHT Regelbedarf
+    - § 20 SGB II: Regelbedarf (pauschaler Betrag für Ernährung, Kleidung, Haushalt etc.)
+    - § 21 SGB II: Mehrbedarfe (z.B. dezentrale Warmwassererzeugung, Alleinerziehende)
+    - § 22 SGB II: Bedarfe für Unterkunft und Heizung
+    - § 11 SGB II: Anrechnung von Einkommen auf den Bedarf
+    - § 7 SGB II NICHT mit § 19/20 verwechseln — § 7 ist die Zugangsnorm, § 19/20 sind die Leistungsnormen
 
     RUNDFUNKBEITRAGSBEFREIUNG: Wenn der Bescheid eine Bescheinigung für ARD/ZDF/Deutschlandradio enthält, als separaten Handlungshinweis aufnehmen: "Dem Bescheid liegt eine Bescheinigung bei, mit der du dich beim Beitragsservice von ARD, ZDF und Deutschlandradio von der Rundfunkbeitragspflicht befreien lassen kannst. Sende sie mit deiner Beitragsnummer an: Beitragsservice, 50656 Köln."`;
 
