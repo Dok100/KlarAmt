@@ -158,7 +158,29 @@ REGELN:
    - Beschreibungsformat pro Eintrag: "Vorauszahlung [Jahr]: [Betrag1] € Einkommensteuer + [Betrag2] € Kirchensteuer = [Gesamt] Euro"
      KEINE Ratennummer in der Beschreibung ("2. Rate" etc.) — Nutzer sehen nur die zukünftigen Raten und verstehen "2. Rate" nicht ohne die fehlende "1. Rate".
    - Wenn 2025 und 2026 unterschiedliche Beträge haben: separate Einträge mit korrekten Beträgen.
-   - Steuerarten mit 0 Euro weglassen.`;
+   - Steuerarten mit 0 Euro weglassen.
+
+10. LEISTUNGS- UND BEWILLIGUNGSBESCHEIDE (Bürgergeld SGB II, Wohngeld, ALG I/II):
+
+    AUSZAHLUNGSLOGIK (häufigste Verwirrungsquelle):
+    - Gesamtanspruch ≠ Betrag der auf dem Konto ankommt. Diese Trennung ist Pflicht:
+      a) Auszahlung direkt an den Antragsteller (auf sein Konto)
+      b) Direktzahlung an Dritte (z.B. Miete direkt an Vermieter/Wohnungsbaugesellschaft)
+    - bedeutung_fuer_dich MUSS formulieren: "Von den [Gesamt] Euro gehen [X] Euro direkt an [Vermieter/Dritter]. Auf dein Konto werden [Restbetrag] überwiesen."
+    - Wenn monatliche Auszahlungsbeträge variieren (unterschiedliche Zeiträume im Bescheid): jeden Zeitraum als eigenen Fristeneintrag (typ: "zahlung") mit dem Startdatum des Zeitraums und der Beschreibung "Auszahlung [Zeitraum]: [Betrag] Euro auf dein Konto" = [Betrag] Euro.
+    - Sondermonate: Februar und August können bei Familien mit Kindern wegen Schulbedarf höhere Beträge haben — wenn erkennbar, erwähnen.
+
+    BEWILLIGUNG ist grundsätzlich positiv — Ampel GELB, nicht GRÜN. Grund: Mitteilungspflichten.
+
+    MITTEILUNGSPFLICHTEN bei SGB II sind Kerninformation — immer als eigenen Handlungshinweis, weil Verstöße zur Rückforderung führen können:
+    "Wenn sich Einkommen, Arbeit, Adresse, Mietkosten, Haushaltsmitglieder oder Familiensituation ändern, musst du das dem Jobcenter sofort mitteilen — ohne Aufforderung. Nutze dafür das Formular 'Veränderungsmitteilung' oder melde dich online."
+
+    WIDERSPRUCH (nicht Einspruch) bei Jobcenter/SGB II-Bescheiden:
+    - Fristtyp: "widerspruch", 1 Monat ab Bekanntgabe
+    - Rechtsgrundlage: § 40 SGB II — nicht § 70 VwGO oder § 122 AO (das sind Steuergesetze)
+    - Formulierung: "Du kannst fristwahrend Widerspruch einlegen, wenn du der Meinung bist, dass Berechnung oder Bewilligungszeitraum falsch sind."
+
+    RUNDFUNKBEITRAGSBEFREIUNG: Wenn der Bescheid eine Bescheinigung für ARD/ZDF/Deutschlandradio enthält, als separaten Handlungshinweis aufnehmen: "Dem Bescheid liegt eine Bescheinigung bei, mit der du dich beim Beitragsservice von ARD, ZDF und Deutschlandradio von der Rundfunkbeitragspflicht befreien lassen kannst. Sende sie mit deiner Beitragsnummer an: Beitragsservice, 50656 Köln."`;
 
 type VisionBlock =
   | { type: 'document'; source: { type: 'base64'; media_type: 'application/pdf'; data: string } }
