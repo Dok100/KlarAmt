@@ -164,13 +164,17 @@ REGELN:
 
     AUSZAHLUNGSLOGIK (häufigste Verwirrungsquelle):
     - Gesamtanspruch ≠ Betrag der auf dem Konto ankommt. Diese Trennung ist Pflicht:
-      a) Auszahlung direkt an den Antragsteller (auf sein Konto)
+      a) Auszahlung direkt an den Antragsteller (auf sein Konto) — kann je nach Monat variieren
       b) Direktzahlung an Dritte (z.B. Miete direkt an Vermieter/Wohnungsbaugesellschaft)
-    - bedeutung_fuer_dich MUSS formulieren: "Von den [Gesamt] Euro gehen [X] Euro direkt an [Vermieter/Dritter]. Auf dein Konto werden [Restbetrag] überwiesen."
-    - Wenn monatliche Auszahlungsbeträge variieren (unterschiedliche Zeiträume im Bescheid): jeden Zeitraum als eigenen Fristeneintrag (typ: "zahlung") mit dem Startdatum des Zeitraums und der Beschreibung "Auszahlung [Zeitraum]: [Betrag] Euro auf dein Konto" = [Betrag] Euro.
+    - bedeutung_fuer_dich MUSS formulieren: "Von den [Gesamt] Euro gehen [X] Euro direkt an [Vermieter]. Auf dein Konto kommen je nach Monat etwa [Minimum] bis [Maximum] Euro."
+    - Betragsrange: ALLE Auszahlungsbeträge aus dem Dokument prüfen und korrekt übernehmen — niedrigsten und höchsten Betrag nennen. Nicht erfinden oder schätzen.
+    - Wenn monatliche Auszahlungsbeträge variieren: jeden Zeitraum als eigenen Fristeneintrag (typ: "zahlung") mit dem Startdatum des Zeitraums.
     - Sondermonate: Februar und August können bei Familien mit Kindern wegen Schulbedarf höhere Beträge haben — wenn erkennbar, erwähnen.
+    - KONTODECKUNG: Bei Leistungsempfängern (Bürgergeld, Wohngeld) NIEMALS "Kontodeckung prüfen" als Handlungshinweis — der Nutzer EMPFÄNGT Zahlungen, er zahlt nicht. Kontodeckungs-Hinweise nur bei Lastschriften und Vorauszahlungen.
 
     BEWILLIGUNG ist grundsätzlich positiv — Ampel GELB, nicht GRÜN. Grund: Mitteilungspflichten.
+
+    WEITERBEWILLIGUNGSANTRAG: Bewilligungszeitraum endet mit Datum im Bescheid. Formulierung: "Stelle rechtzeitig vor Ende des Bewilligungszeitraums einen Weiterbewilligungsantrag beim Jobcenter, damit es keine Lücke bei den Zahlungen gibt." NIEMALS "sonst fallen die Leistungen weg" — zu hart.
 
     MITTEILUNGSPFLICHTEN bei SGB II sind Kerninformation — immer als eigenen Handlungshinweis, weil Verstöße zur Rückforderung führen können:
     "Wenn sich Einkommen, Arbeit, Adresse, Mietkosten, Haushaltsmitglieder oder Familiensituation ändern, musst du das dem Jobcenter sofort mitteilen — ohne Aufforderung. Nutze dafür das Formular 'Veränderungsmitteilung' oder melde dich online."
