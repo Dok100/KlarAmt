@@ -133,14 +133,16 @@ REGELN:
    Enthält ein Bescheid GLEICHZEITIG eine Erstattung (Vorjahr) UND Vorauszahlungen (Folgejahr):
    - Zusammenfassung beginnt IMMER mit der Erstattung wenn vorhanden: "Für [Jahr] bekommst du [Erstattungsbetrag] Euro zurück."
    - NIEMALS die festgesetzte Steuer (z.B. "1.596 Euro Einkommensteuer") als Zahlungspflicht formulieren wenn es eine Erstattung gibt — das ist irreführend. Die festgesetzte Steuer ist eine Berechnungsgröße, kein Zahlungsbetrag.
-   - Zusammenfassung: Konkrete Daten und GESAMTBETRÄGE nennen — niemals die Einzelbestandteile (362 Euro ESt + 29 Euro KiSt). Die Aufschlüsselung gehört in die Tabelle. Korrekt: "Für 2024 bekommst du 99,32 Euro zurück. Danach bucht das Finanzamt voraussichtlich 391 Euro am 10.06., 10.09. und 10.12.2025 ab." NIEMALS "quartalsweise" — zu sperrig. Wenn 2025 und 2026 unterschiedliche Gesamtbeträge haben: beide nennen.
-   - Falsch: "Für 2024 zahlst du 1.596 Euro Einkommensteuer" — klingt wie Schuld, ist aber Berechnungsgröße.
+   - KONSISTENZREGEL (kritisch): Zusammenfassung, erklaerung.sachverhalt, erklaerung.bedeutung_fuer_dich und ALLE Handlungshinweise dürfen NUR Zahlungstermine nennen, die NACH dem Bescheiddatum liegen. Termine vor dem Bescheiddatum sind bereits verrechnet. Beispiel: Bescheiddatum 14.05.2025 → 10.03.2025 NIEMALS als "kommende Zahlung" erwähnen, weder in der Zusammenfassung noch in der Erklärung noch in Handlungshinweisen. Nur 10.06., 10.09. und 10.12.2025 sind zukünftige Termine.
+   - Der "nächste Zahlungstermin" in Handlungshinweisen ist der ERSTE Termin nach dem Bescheiddatum — nicht der erste Termin des Jahres.
+   - Zusammenfassung: Nur GESAMTBETRÄGE (391 Euro) — nie Einzelbestandteile (362 + 29). Aufschlüsselung gehört in die Tabelle. Wenn 2025 und 2026 unterschiedliche Beträge haben: beide nennen. Korrekt: "Für 2024 bekommst du 99,32 Euro zurück. Danach bucht das Finanzamt 391 Euro am 10.06., 10.09. und 10.12.2025 ab. Ab März 2026 sind jeweils 388 Euro vorgesehen."
+   - Falsch: "Für 2024 zahlst du 1.596 Euro Einkommensteuer" — Berechnungsgröße, keine Schuld.
    - Falsch: Erstattung und Vorauszahlung gegeneinander aufrechnen.
-   - Vorauszahlungen sind 4 Termine pro Jahr (10. März, 10. Juni, 10. September, 10. Dezember). NIEMALS "jeden Monat" oder "monatlich".
-   - 2025 vs. Folgejahre: Steuerbescheide enthalten oft unterschiedliche Beträge für das laufende Jahr und "2026 und weitere Jahre". Diese MÜSSEN separat extrahiert werden — nicht denselben Betrag für alle Jahre annehmen. Wenn die Beträge abweichen, als getrennte Fristen-Einträge erfassen.
-   - Lastschrift statt SEPA: NIEMALS "SEPA" schreiben — immer "Lastschrift" oder "automatisch von deinem Konto abgebucht". Das Wort SEPA kennen viele nicht.
-   - Bei Lastschriftmandat: "Das Finanzamt bucht den Betrag automatisch von deinem Konto ab. Du musst nichts selbst überweisen — prüfe nur, ob das Konto ausreichend gedeckt ist."
-   - bedeutung_fuer_dich: Nur Zahlungstermine NACH dem Bescheiddatum nennen. Vergangene Termine weglassen — sie sind bereits verrechnet. NIEMALS "N Raten à X Euro" wenn die Beträge pro Termin unterschiedlich sind — stattdessen jeden Termin mit konkretem Betrag nennen: "[Betrag1] Euro am [Datum1], [Betrag2] Euro am [Datum2]." Konsistenz mit der Zahlungstabelle ist Pflicht — die Beträge müssen übereinstimmen.
+   - Vorauszahlungen sind 4 Termine pro Jahr. NIEMALS "monatlich".
+   - 2025 vs. Folgejahre: unterschiedliche Beträge separat extrahieren und als getrennte Fristen-Einträge erfassen.
+   - Lastschrift statt SEPA: NIEMALS "SEPA" — immer "Lastschrift" oder "automatisch abgebucht".
+   - Bei Lastschriftmandat: "Das Finanzamt bucht den Betrag automatisch ab. Du musst nichts selbst überweisen — prüfe nur, ob das Konto gedeckt ist."
+   - bedeutung_fuer_dich: Nur Termine nach dem Bescheiddatum, konkrete Gesamtbeträge pro Datum.
    - Beträge immer direkt aus dem Dokument übernehmen — NIEMALS "ca.", NIEMALS schätzen oder runden.
    - Nullbeträge (0 Euro) NICHT erwähnen — nur Beträge > 0 nennen.
 

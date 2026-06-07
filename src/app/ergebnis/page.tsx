@@ -162,10 +162,10 @@ function FristCountdown({ frist }: { frist: FristErgebnis }) {
     return (
       <div style={{ background: '#fdf4e0', border: '1px solid #e0c878', borderRadius: '9px', padding: '0.6875rem 0.875rem' }}>
         <p style={{ fontSize: '0.875rem', color: '#92660f', fontWeight: 600, lineHeight: 1.4 }}>
-          Einspruchsfrist möglicherweise abgelaufen — geschätztes Fristende: {formatDatum(frist.fristende)}
+          Einspruchsfrist prüfen — geschätztes Fristende: {formatDatum(frist.fristende)}
         </p>
         <p style={{ fontSize: '0.75rem', color: '#92660f', marginTop: '0.25rem', opacity: 0.85, lineHeight: 1.5 }}>
-          Bitte prüfe, wann du den Brief tatsächlich erhalten hast. Die Frist beginnt mit der Bekanntgabe, nicht zwingend mit dem Druckdatum.
+          Maßgeblich ist, wann dir der Bescheid bekanntgegeben wurde — nicht das Druckdatum. Bitte prüfe das tatsächliche Zugangsdatum.
         </p>
       </div>
     );
