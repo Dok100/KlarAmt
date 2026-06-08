@@ -16,6 +16,8 @@ AUFBAU des Briefs:
 
 <Behörde>
 <Abteilung falls vorhanden>
+<Straße und Hausnummer falls vorhanden>
+<PLZ und Ort falls vorhanden>
 
 [ORT], [DATUM]
 
@@ -60,6 +62,8 @@ export async function POST(req: NextRequest) {
     const antworttyp = String(body.antworttyp || '');
     const behoerde = String(body.behoerde || '').slice(0, 200);
     const abteilung = String(body.abteilung || '').slice(0, 200);
+    const strasse = String(body.strasse || '').slice(0, 200);
+    const plzOrt = String(body.plzOrt || '').slice(0, 200);
     const aktenzeichen = String(body.aktenzeichen || '').slice(0, 100);
     const dokumenttyp = String(body.dokumenttyp || '').slice(0, 200);
     const sprache = String(body.sprache || 'Deutsch').slice(0, 40);
@@ -83,6 +87,8 @@ export async function POST(req: NextRequest) {
 ANTWORTTYP: ${antworttyp}
 BEHÖRDE: ${behoerde}
 ABTEILUNG: ${abteilung}
+STRASSE: ${strasse}
+PLZ UND ORT: ${plzOrt}
 AKTENZEICHEN: ${aktenzeichen}
 DOKUMENTTYP: ${dokumenttyp}
 ZIELSPRACHE: ${sprache}`,

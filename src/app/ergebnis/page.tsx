@@ -265,6 +265,8 @@ function Antwortgenerator({ a }: { a: AnalyseInhalt }) {
   const [empf, setEmpf] = useState({
     behoerde: a.absender.behoerde,
     abteilung: a.absender.abteilung,
+    strasse: '',
+    plzOrt: '',
     aktenzeichen: a.absender.aktenzeichen,
   });
 
@@ -301,6 +303,8 @@ function Antwortgenerator({ a }: { a: AnalyseInhalt }) {
           antworttyp: typ,
           behoerde: empf.behoerde,
           abteilung: empf.abteilung,
+          strasse: empf.strasse,
+          plzOrt: empf.plzOrt,
           aktenzeichen: empf.aktenzeichen,
           dokumenttyp: a.dokumenttyp,
           sprache: 'Deutsch',
@@ -475,6 +479,8 @@ function Antwortgenerator({ a }: { a: AnalyseInhalt }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <Feld label="Behörde" value={empf.behoerde} onChange={(v) => setEmpf((p) => ({ ...p, behoerde: v }))} />
             <Feld label="Abteilung" value={empf.abteilung} onChange={(v) => setEmpf((p) => ({ ...p, abteilung: v }))} />
+            <Feld label="Straße und Hausnummer" value={empf.strasse} onChange={(v) => setEmpf((p) => ({ ...p, strasse: v }))} placeholder="aus dem Briefkopf" />
+            <Feld label="PLZ und Ort" value={empf.plzOrt} onChange={(v) => setEmpf((p) => ({ ...p, plzOrt: v }))} placeholder="aus dem Briefkopf" />
             <Feld label="Aktenzeichen" value={empf.aktenzeichen} onChange={(v) => setEmpf((p) => ({ ...p, aktenzeichen: v }))} />
           </div>
         </div>
