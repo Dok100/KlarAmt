@@ -153,9 +153,23 @@ REGELN:
    - ampel.status = "gruen", risikokategorie = "niedrig"
 
 8. ZAHLUNGSTYPEN (häufigste Fehlerquelle — sorgfältig unterscheiden):
-   - ERSTATTUNG/GUTHABEN: Zu viel gezahlte Steuer wird zurücküberwiesen. Nutzer bekommt Geld.
-   - NACHZAHLUNG: Fehlbetrag für abgelaufenes Steuerjahr. Nutzer muss aktiv zahlen.
-   - VORAUSZAHLUNG: Abschlagszahlung auf künftige Steuer. Wird separat festgesetzt, oft per SEPA automatisch eingezogen.
+
+   RICHTUNGSREGEL (kritisch, gilt für ALLE Dokumente — Steuer, Energie, Gebühren):
+   - Die Zahlungsrichtung bestimmt sich nach dem VERB der Geldbewegung, NICHT nach dem Vorzeichen der Zahl. Vorzeichen sind je nach Anbieter uneinheitlich (eine "Nachzahlung" kann als "-119,84 €" dargestellt sein und bedeutet trotzdem, dass DU zahlst).
+   - "wird eingezogen" / "wird abgebucht" / "von Ihrem Konto" / "bitte überweisen" / "Nachzahlung" / "Restbetrag" → DU ZAHLST (Geld verlässt dein Konto)
+   - "wird erstattet" / "wird überwiesen auf Ihr Konto" / "wird ausgezahlt" / "Guthaben" / "Gutschrift" → DU BEKOMMST GELD
+   - Im Zweifel: Suche den Satz, der beschreibt, wohin das Geld fließt. "von dem Konto ... eingezogen" = du zahlst. "auf das Konto ... erstattet" = du bekommst.
+   - KONSISTENZ: zusammenfassung, erklaerung und zahlungen MÜSSEN dieselbe Richtung nennen. NIEMALS in einem Satz "du bekommst zurück" und im nächsten "Nachzahlung wird eingezogen" — das ist widersprüchlich und falsch.
+
+   - ERSTATTUNG/GUTHABEN: Zu viel gezahlt → Nutzer bekommt Geld zurück (wird überwiesen/erstattet).
+   - NACHZAHLUNG: Fehlbetrag → Nutzer zahlt (wird eingezogen/abgebucht oder muss überweisen).
+   - VORAUSZAHLUNG/ABSCHLAG: Laufende Abschlagszahlung auf künftigen Verbrauch/Steuer. Wird meist per Lastschrift eingezogen.
+
+   ENERGIEABRECHNUNG (Strom/Gas Jahresrechnung):
+   - "Nachzahlung" bedeutet IMMER: Du zahlst den Betrag (auch wenn mit Minuszeichen dargestellt). Prüfe den Einzugssatz ("wird ... eingezogen").
+   - "Guthaben"/"Erstattung" bedeutet: Du bekommst Geld zurück.
+   - Neuer "Abschlag" ist KEINE Nach- oder Rückzahlung — es ist der künftige monatliche Betrag. Separat nennen.
+   - Verbrauchsvergleich (Vorjahr vs. aktuell) als Kontext erwähnen, wenn auffällig.
 
    Enthält ein Bescheid GLEICHZEITIG eine Erstattung (Vorjahr) UND Vorauszahlungen (Folgejahr):
    - Zusammenfassung beginnt IMMER mit der Erstattung wenn vorhanden: "Für [Jahr] bekommst du [Erstattungsbetrag] Euro zurück."
