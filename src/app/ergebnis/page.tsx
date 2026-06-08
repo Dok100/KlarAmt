@@ -256,22 +256,123 @@ function Antwortgenerator({ a }: { a: AnalyseInhalt }) {
   async function alsPdf() {
     const { jsPDF } = await import('jspdf');
     const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-    const rand = 56;
-    const breite = doc.internal.pageSize.getWidth() - rand * 2;
-    const hoehe = doc.internal.pageSize.getHeight();
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(11);
-    const zeilen = doc.splitTextToSize(brief, breite) as string[];
-    let y = rand;
-    const zh = 16;
-    for (const zeile of zeilen) {
-      if (y > hoehe - rand) {
-        doc.addPage();
-        y = rand;
+    const mm = (v: number) => v * 2.83465;
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const left = mm(25);
+    const right = pageW - mm(20);
+    const textW = right - left;
+    const lh = 14;
+
+    const lines = brief.replace(/\r/g, '').split('\n');
+    const voll = (s: string) => s.trim().length > 0;
+
+    const dateRe = /\d{1,2}\.\s*\d{1,2}\.\s*\d{2,4}/;
+    const anredeRe = /^(sehr geehrte|sehr geehrter|sehr verehrte|guten tag|hallo)/i;
+    const grussRe = /(freundlichen gr|freundlichem gruß|freundliche grüße|besten grüßen)/i;
+
+    const idxDate = lines.findIndex((l) => dateRe.test(l) && /(,|\bden\b)/.test(l));
+    const idxAnrede = lines.findIndex((l) => anredeRe.test(l.trim()));
+
+    function einfacherFluss() {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      let y = mm(25);
+      for (const z of doc.splitTextToSize(brief, textW) as string[]) {
+        if (y > pageH - mm(20)) { doc.addPage(); y = mm(25); }
+        doc.text(z, left, y);
+        y += lh;
       }
-      doc.text(zeile, rand, y);
-      y += zh;
+      doc.save('klaramt-antwort.pdf');
     }
+
+    if (idxDate < 0 || idxAnrede < 0 || idxDate >= idxAnrede) {
+      einfacherFluss();
+      return;
+    }
+
+    // Absender: führende nicht-leere Zeilen
+    let p = 0;
+    const sender: string[] = [];
+    while (p < lines.length && voll(lines[p])) { sender.push(lines[p].trim()); p++; }
+
+    // Empfänger: nicht-leerer Block direkt vor dem Datum
+    let r = idxDate - 1;
+    while (r >= 0 && !voll(lines[r])) r--;
+    const recEnd = r;
+    while (r >= 0 && voll(lines[r])) r--;
+    const empfaenger = lines.slice(r + 1, recEnd + 1).map((s) => s.trim());
+
+    const datum = lines[idxDate].trim();
+    const betreff = lines.slice(idxDate + 1, idxAnrede)
+      .filter(voll)
+      .map((s) => s.replace(/^betreff:\s*/i, '').trim());
+    const anrede = lines[idxAnrede].trim();
+
+    const idxGruss = lines.findIndex((l, i) => i > idxAnrede && grussRe.test(l));
+    const bodyEnd = idxGruss >= 0 ? idxGruss : lines.length;
+    const bodyLines = lines.slice(idxAnrede + 1, bodyEnd);
+    const gruss = idxGruss >= 0 ? lines[idxGruss].trim() : '';
+    const name = idxGruss >= 0 ? lines.slice(idxGruss + 1).filter(voll).map((s) => s.trim()) : [];
+
+    // Rücksendeangabe (Absender, klein, unterstrichen)
+    if (sender.length) {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      const ra = sender.join(' · ');
+      doc.text(ra, left, mm(24));
+      doc.setLineWidth(0.5);
+      doc.line(left, mm(24) + 2, left + doc.getTextWidth(ra), mm(24) + 2);
+    }
+
+    // Anschriftfeld (Empfänger)
+    doc.setFontSize(11);
+    let y = mm(33);
+    for (const e of empfaenger) { doc.text(e, left, y); y += mm(5); }
+
+    // Datum rechtsbündig, unterhalb des Anschriftfelds (DIN-Mindestposition mm(63))
+    const datumY = Math.max(mm(63), y + mm(8));
+    doc.text(datum, right, datumY, { align: 'right' });
+
+    // Betreff fett
+    doc.setFont('helvetica', 'bold');
+    let yy = datumY + mm(12);
+    for (const b of betreff) {
+      for (const z of doc.splitTextToSize(b, textW) as string[]) { doc.text(z, left, yy); yy += mm(5); }
+    }
+    doc.setFont('helvetica', 'normal');
+
+    // Anrede
+    yy += mm(6);
+    doc.text(anrede, left, yy);
+    yy += mm(8);
+
+    // Fließtext, Absätze durch Leerzeilen getrennt
+    let para: string[] = [];
+    const schreibe = (text: string) => {
+      for (const z of doc.splitTextToSize(text, textW) as string[]) {
+        if (yy > pageH - mm(25)) { doc.addPage(); yy = mm(25); }
+        doc.text(z, left, yy);
+        yy += lh;
+      }
+    };
+    const absatz = () => { if (para.length) { schreibe(para.join(' ')); para = []; yy += mm(3); } };
+    for (const b of bodyLines) { if (voll(b)) para.push(b.trim()); else absatz(); }
+    absatz();
+
+    // Gruß + Unterschriftsraum + Name
+    if (gruss) {
+      yy += mm(2);
+      if (yy > pageH - mm(45)) { doc.addPage(); yy = mm(25); }
+      doc.text(gruss, left, yy);
+      yy += mm(20);
+    }
+    for (const n of name) {
+      if (yy > pageH - mm(20)) { doc.addPage(); yy = mm(25); }
+      doc.text(n, left, yy);
+      yy += mm(5);
+    }
+
     doc.save('klaramt-antwort.pdf');
   }
 
