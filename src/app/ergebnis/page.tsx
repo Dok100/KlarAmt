@@ -28,6 +28,7 @@ interface ErgebnisData {
         prioritaet: number;
         aktion: string;
         dringlichkeit: string;
+        antworttyp?: string;
         erklaerung: string;
       }[];
       eskalation: { beratung_empfohlen: boolean; begruendung: string; beratungsstellen: string };
@@ -184,6 +185,182 @@ function FristCountdown({ frist }: { frist: FristErgebnis }) {
       <span style={{ fontSize: '0.875rem', marginLeft: '0.375rem' }}>Tage bis zum geschätzten Fristende ({frist.fristende})</span>
       <p style={{ fontSize: '0.75rem', marginTop: '0.25rem', opacity: 0.65, lineHeight: 1.5 }}>{frist.hinweis}</p>
     </div>
+  );
+}
+
+const ANTWORT_LABELS: Record<string, string> = {
+  fristverlaengerung: 'Fristverlängerung beantragen',
+  unterlagen_nachreichen: 'Unterlagen nachreichen',
+  einspruch_einfach: 'Fristwahrenden Einspruch einlegen',
+  widerspruch_einfach: 'Fristwahrenden Widerspruch einlegen',
+  informationsanfrage: 'Auskunft / Akteneinsicht anfragen',
+};
+
+type AnalyseInhalt = ErgebnisData['analyse']['analyse'];
+
+function Antwortgenerator({ a }: { a: AnalyseInhalt }) {
+  const typen = Array.from(
+    new Set(
+      a.handlungshinweise
+        .map((h) => h.antworttyp)
+        .filter((t): t is string => !!t && t in ANTWORT_LABELS)
+    )
+  );
+
+  const [gewaehlt, setGewaehlt] = useState<string | null>(null);
+  const [laedt, setLaedt] = useState(false);
+  const [brief, setBrief] = useState('');
+  const [fehler, setFehler] = useState<string | null>(null);
+  const [kopiert, setKopiert] = useState(false);
+
+  if (typen.length === 0) return null;
+
+  async function generiere(typ: string) {
+    setGewaehlt(typ);
+    setFehler(null);
+    setKopiert(false);
+    setBrief('');
+    setLaedt(true);
+    try {
+      const res = await fetch('/api/antwort', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          antworttyp: typ,
+          behoerde: a.absender.behoerde,
+          abteilung: a.absender.abteilung,
+          aktenzeichen: a.absender.aktenzeichen,
+          dokumenttyp: a.dokumenttyp,
+          sprache: 'Deutsch',
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.fehler) {
+        setFehler(data.fehler || 'Die Vorlage konnte nicht erstellt werden. Bitte versuche es erneut.');
+        return;
+      }
+      setBrief(data.brief);
+    } catch {
+      setFehler('Verbindungsfehler. Bitte prüfe deine Internetverbindung und versuche es erneut.');
+    } finally {
+      setLaedt(false);
+    }
+  }
+
+  async function kopieren() {
+    await navigator.clipboard.writeText(brief);
+    setKopiert(true);
+    setTimeout(() => setKopiert(false), 2000);
+  }
+
+  async function alsPdf() {
+    const { jsPDF } = await import('jspdf');
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const rand = 56;
+    const breite = doc.internal.pageSize.getWidth() - rand * 2;
+    const hoehe = doc.internal.pageSize.getHeight();
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    const zeilen = doc.splitTextToSize(brief, breite) as string[];
+    let y = rand;
+    const zh = 16;
+    for (const zeile of zeilen) {
+      if (y > hoehe - rand) {
+        doc.addPage();
+        y = rand;
+      }
+      doc.text(zeile, rand, y);
+      y += zh;
+    }
+    doc.save('klaramt-antwort.pdf');
+  }
+
+  return (
+    <Card style={{ padding: '1.25rem' }}>
+      <p style={{ fontWeight: 700, color: '#1a1814', fontSize: '0.9375rem', letterSpacing: '-0.01em', marginBottom: '0.375rem' }}>
+        Antwort erstellen
+      </p>
+      <p style={{ fontSize: '0.8125rem', color: '#7a6e63', lineHeight: 1.6, marginBottom: '1rem' }}>
+        Wähle, was du tun möchtest. KlarAmt erstellt eine fristwahrende Vorlage zum Bearbeiten.
+      </p>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        {typen.map((t) => (
+          <button
+            key={t}
+            onClick={() => generiere(t)}
+            disabled={laedt}
+            style={{
+              textAlign: 'left',
+              padding: '0.75rem 0.875rem',
+              borderRadius: '10px',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              border: gewaehlt === t ? '1.5px solid #1a1814' : '1.5px solid #e0d8cc',
+              background: gewaehlt === t ? '#1a1814' : 'transparent',
+              color: gewaehlt === t ? '#f3ede1' : '#3d3530',
+              cursor: laedt ? 'wait' : 'pointer',
+              transition: 'all 0.12s',
+            }}
+          >
+            {ANTWORT_LABELS[t]}
+          </button>
+        ))}
+      </div>
+
+      {laedt && (
+        <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
+          <div style={{ width: 26, height: 26, border: '2.5px solid #e0d8cc', borderTopColor: '#1a1814', borderRadius: '50%', animation: 'spin 0.75s linear infinite', margin: '0 auto 0.625rem' }} />
+          <p style={{ color: '#7a6e63', fontSize: '0.8125rem' }}>Vorlage wird erstellt…</p>
+        </div>
+      )}
+
+      {fehler && (
+        <div style={{ marginTop: '0.875rem', padding: '0.75rem 0.875rem', background: '#f7ece8', border: '1px solid #e8c4b8', borderRadius: '10px', color: '#b53d1f', fontSize: '0.8125rem', lineHeight: 1.55 }}>
+          {fehler}
+        </div>
+      )}
+
+      {brief && !laedt && (
+        <div style={{ marginTop: '1rem' }}>
+          <div style={{ background: '#fdf4e0', border: '1px solid #e0c878', borderRadius: '10px', padding: '0.75rem 0.875rem', fontSize: '0.75rem', color: '#92660f', lineHeight: 1.55, marginBottom: '0.75rem' }}>
+            Das ist eine fristwahrende Vorlage ohne Begründung. Prüfe alle Angaben, ergänze die markierten Felder ([DEIN NAME] usw.) und füge bei Bedarf eine Begründung hinzu. KlarAmt leistet keine Rechtsberatung.
+          </div>
+          <textarea
+            value={brief}
+            onChange={(e) => setBrief(e.target.value)}
+            rows={16}
+            style={{
+              width: '100%',
+              padding: '0.875rem',
+              borderRadius: '10px',
+              border: '1.5px solid #e0d8cc',
+              background: '#faf8f4',
+              color: '#1a1814',
+              fontSize: '0.8125rem',
+              lineHeight: 1.6,
+              fontFamily: 'inherit',
+              resize: 'vertical',
+              boxSizing: 'border-box',
+            }}
+          />
+          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.625rem' }}>
+            <button
+              onClick={kopieren}
+              style={{ flex: 1, background: 'transparent', color: '#3d3530', fontWeight: 600, fontSize: '0.875rem', padding: '0.75rem', borderRadius: '10px', border: '1.5px solid #e0d8cc', cursor: 'pointer' }}
+            >
+              {kopiert ? 'Kopiert ✓' : 'Kopieren'}
+            </button>
+            <button
+              onClick={alsPdf}
+              style={{ flex: 1, background: '#1a1814', color: '#f3ede1', fontWeight: 600, fontSize: '0.875rem', padding: '0.75rem', borderRadius: '10px', border: 'none', cursor: 'pointer' }}
+            >
+              Als PDF herunterladen
+            </button>
+          </div>
+        </div>
+      )}
+    </Card>
   );
 }
 
@@ -391,26 +568,7 @@ export default function ErgebnisSeite() {
 
         {/* Antwortgenerator */}
         {daten.antwortgenerierung.erlaubt ? (
-          <Card style={{ textAlign: 'center', padding: '1.25rem' }}>
-            <p style={{ fontSize: '0.875rem', color: '#7a6e63', marginBottom: '0.875rem' }}>Musst du auf diesen Brief antworten?</p>
-            <button
-              disabled
-              style={{
-                width: '100%',
-                background: '#f3ede1',
-                color: '#b0a498',
-                fontWeight: 600,
-                fontSize: '0.9375rem',
-                padding: '0.875rem',
-                borderRadius: '10px',
-                border: '1px solid #e0d8cc',
-                cursor: 'not-allowed',
-                letterSpacing: '-0.01em',
-              }}
-            >
-              Antwortvorlage erstellen (kommt bald)
-            </button>
-          </Card>
+          <Antwortgenerator a={a} />
         ) : daten.antwortgenerierung.grund ? (
           <Card>
             <p style={{ fontWeight: 600, color: '#1a1814', fontSize: '0.875rem', marginBottom: '0.375rem' }}>Kein Antwortgenerator</p>
