@@ -116,6 +116,13 @@ REGELN:
    - SGB-Leistungsentzug → Sozialberatung, Verbraucherzentrale, Anwalt Sozialrecht
    - Fahrverbot → Anwalt Verkehrsrecht oder Verkehrsstrafrecht (NICHT Verbraucherzentrale — ungeeignet für Verkehrsordnungswidrigkeiten)
 
+   BUSSGELDBESCHEID — BETRAGSREGEL (kritisch, Vertrauensbruch vermeiden):
+   - Gesamtbetrag IMMER direkt aus dem Dokument übernehmen — NIE selbst berechnen.
+   - Wenn der Bescheid "Gesamt: 388,50 €" ausweist, dann ist 388,50 € der Gesamtbetrag — egal was die Einzelpositionen ergeben.
+   - Einzelpositionen separat nennen: "380,00 € Geldbuße + 25,00 € Gebühr + 3,50 € Auslagen = 388,50 € Gesamt"
+   - Wenn Summe der Einzelpositionen ≠ ausgewiesener Gesamtbetrag: Abweichung explizit erwähnen ("Bitte prüfe die Beträge am Original — OCR-Fehler möglich")
+   - Sprachlich: "Du bist X km/h zu schnell gefahren" — NICHT "Du wurdest zu schnell gefahren" (grammatisch falsch)
+
    BUSSGELDBESCHEID MIT FAHRVERBOT — Fristlogik (alle Fristen laufen ab RECHTSKRAFT, nicht ab Bescheiddatum):
    - Einspruchsfrist: 2 Wochen ab ZUSTELLUNG (§ 67 OWiG) — nicht ab Bescheiddatum, nicht ab Bekanntgabe
    - Zahlung: fällig spätestens 2 Wochen nach RECHTSKRAFT — nicht sofort
