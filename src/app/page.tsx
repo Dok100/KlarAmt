@@ -127,6 +127,7 @@ export default function Home() {
   const [fehler, setFehler] = useState<string | null>(null);
   const [kontingentErschoepft, setKontingentErschoepft] = useState(false);
   const [istMobil, setIstMobil] = useState(false);
+  const [phase, setPhase] = useState<'lesen' | 'analyse'>('lesen');
 
   useEffect(() => {
     setConsentGegeben(hatConsent());
@@ -141,6 +142,7 @@ export default function Home() {
 
   async function analysiereFile(file: File) {
     setFehler(null);
+    setPhase('lesen');
     setLaedt(true);
 
     const formData = new FormData();
@@ -149,18 +151,60 @@ export default function Home() {
 
     try {
       const res = await fetch('/api/analyse', { method: 'POST', body: formData });
-      const data = await res.json();
 
-      if (!res.ok || data.fehler) {
+      // Fehler-Antworten kommen als JSON, nicht als Stream
+      const contentType = res.headers.get('content-type') || '';
+      if (!res.ok || contentType.includes('application/json')) {
+        const data = await res.json().catch(() => ({}));
         setFehler(data.fehler || 'Ein Fehler ist aufgetreten. Bitte versuche es erneut.');
         return;
       }
 
-      const ampelStatus = data.analyse?.analyse?.ampel?.status;
+      if (!res.body) {
+        setFehler('Verbindungsfehler. Bitte versuche es erneut.');
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let puffer = '';
+      let ergebnis: unknown = null;
+      let streamFehler: string | null = null;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        puffer += decoder.decode(value, { stream: true });
+        const zeilen = puffer.split('\n');
+        puffer = zeilen.pop() ?? '';
+        for (const zeile of zeilen) {
+          if (!zeile.trim()) continue;
+          const evt = JSON.parse(zeile);
+          if (evt.type === 'progress') {
+            setPhase('analyse');
+          } else if (evt.type === 'done') {
+            ergebnis = evt.payload;
+          } else if (evt.type === 'error') {
+            streamFehler = evt.fehler;
+          }
+        }
+      }
+
+      if (streamFehler) {
+        setFehler(streamFehler);
+        return;
+      }
+      if (!ergebnis) {
+        setFehler('Die Analyse wurde unterbrochen. Bitte versuche es erneut.');
+        return;
+      }
+
+      const data = ergebnis as { analyse?: { analyse?: { ampel?: { status?: string } } } };
+      const ampelStatus = data.analyse?.analyse?.ampel?.status ?? '';
       zaehleAnalyse(ampelStatus);
       setKontingentErschoepft(holeAnalysenZaehler() >= LIMIT);
 
-      sessionStorage.setItem('klaramt_ergebnis', JSON.stringify(data));
+      sessionStorage.setItem('klaramt_ergebnis', JSON.stringify(ergebnis));
       router.push('/ergebnis');
     } catch {
       setFehler('Verbindungsfehler. Bitte prüfe deine Internetverbindung und versuche es erneut.');
@@ -267,7 +311,9 @@ export default function Home() {
               animation: 'spin 0.75s linear infinite',
               margin: '0 auto 1rem',
             }} />
-            <p style={{ color: '#3d3530', fontWeight: 600, fontSize: '0.9375rem', letterSpacing: '-0.01em' }}>Brief wird analysiert…</p>
+            <p style={{ color: '#3d3530', fontWeight: 600, fontSize: '0.9375rem', letterSpacing: '-0.01em' }}>
+              {phase === 'lesen' ? 'Brief wird gelesen…' : 'Analyse läuft…'}
+            </p>
             <p style={{ color: '#9c9087', fontSize: '0.8125rem', marginTop: '0.3rem' }}>Das kann bis zu einer Minute dauern.</p>
           </div>
         ) : (

@@ -275,6 +275,10 @@ async function extrahiereInhalt(file: File): Promise<Extraktion> {
 }
 
 export async function POST(req: NextRequest) {
+  let extraktion: Extraktion;
+  let userMessageContent: Anthropic.MessageParam['content'];
+  let textGekuerzt = false;
+
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
@@ -284,13 +288,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ fehler: 'Keine Datei übermittelt.' }, { status: 400 });
     }
 
-    const extraktion = await extrahiereInhalt(file);
-
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-    const model = process.env.CLAUDE_MODEL || 'claude-haiku-4-5-20251001';
-
-    let userMessageContent: Anthropic.MessageParam['content'];
-    let textGekuerzt = false;
+    extraktion = await extrahiereInhalt(file);
 
     if (extraktion.modus === 'text') {
       const saubererText = stripPII(extraktion.text);
@@ -322,40 +320,76 @@ ${textFuerAnalyse}
         },
       ];
     }
-
-    const message = await client.messages.create({
-      model,
-      max_tokens: 4000,
-      temperature: 0.1,
-      system: [{ type: 'text', text: ANALYSE_SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
-      messages: [{ role: 'user', content: userMessageContent }],
-    });
-
-    const claudeAntwort = message.content[0].type === 'text' ? message.content[0].text : '';
-    // Claude wickelt manchmal JSON in ```json ... ``` ein — Backticks entfernen
-    const rawJson = claudeAntwort.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
-
-    let parsed;
-    try {
-      parsed = AnalyseSchema.parse(JSON.parse(rawJson));
-    } catch (e) {
-      console.error('Zod/JSON-Fehler:', e);
-      console.error('Claude raw response (first 500 chars):', rawJson.slice(0, 500));
-      return NextResponse.json({
-        fehler: 'Die Analyse hat kein auswertbares Ergebnis geliefert. Bitte versuche es erneut.',
-      }, { status: 500 });
-    }
-
-    const mitFristen = verarbeiteFristen(parsed);
-    const antwortGate = istAntwortgenerierungErlaubt(parsed);
-
-    return NextResponse.json({
-      analyse: mitFristen,
-      antwortgenerierung: antwortGate,
-      meta: { ocrVerwendet: extraktion.modus === 'vision', textGekuerzt },
-    });
   } catch (e) {
-    console.error('Analyse-Fehler:', e);
-    return NextResponse.json({ fehler: 'Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.' }, { status: 500 });
+    console.error('Vorbereitungs-Fehler:', e);
+    return NextResponse.json({ fehler: 'Die Datei konnte nicht gelesen werden. Bitte versuche es erneut.' }, { status: 500 });
   }
+
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const model = process.env.CLAUDE_MODEL || 'claude-haiku-4-5-20251001';
+  const ocrVerwendet = extraktion.modus === 'vision';
+
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      const send = (obj: unknown) => controller.enqueue(encoder.encode(JSON.stringify(obj) + '\n'));
+
+      try {
+        send({ type: 'progress', phase: 'analyse' });
+
+        const mstream = client.messages.stream({
+          model,
+          max_tokens: 4000,
+          temperature: 0.1,
+          system: [{ type: 'text', text: ANALYSE_SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
+          messages: [{ role: 'user', content: userMessageContent }],
+        });
+
+        // Jeder Text-Delta hält die Vercel-Verbindung offen (kein Timeout)
+        let zeichen = 0;
+        mstream.on('text', (delta) => {
+          zeichen += delta.length;
+          send({ type: 'progress', phase: 'analyse', zeichen });
+        });
+
+        const finalMessage = await mstream.finalMessage();
+        const claudeAntwort = finalMessage.content[0].type === 'text' ? finalMessage.content[0].text : '';
+        const rawJson = claudeAntwort.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+
+        let parsed;
+        try {
+          parsed = AnalyseSchema.parse(JSON.parse(rawJson));
+        } catch (e) {
+          console.error('Zod/JSON-Fehler:', e);
+          console.error('Claude raw response (first 500 chars):', rawJson.slice(0, 500));
+          send({ type: 'error', fehler: 'Die Analyse hat kein auswertbares Ergebnis geliefert. Bitte versuche es erneut.' });
+          return;
+        }
+
+        const mitFristen = verarbeiteFristen(parsed);
+        const antwortGate = istAntwortgenerierungErlaubt(parsed);
+
+        send({
+          type: 'done',
+          payload: {
+            analyse: mitFristen,
+            antwortgenerierung: antwortGate,
+            meta: { ocrVerwendet, textGekuerzt },
+          },
+        });
+      } catch (e) {
+        console.error('Analyse-Fehler:', e);
+        send({ type: 'error', fehler: 'Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.' });
+      } finally {
+        controller.close();
+      }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'application/x-ndjson; charset=utf-8',
+      'Cache-Control': 'no-cache, no-transform',
+    },
+  });
 }

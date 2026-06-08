@@ -33,10 +33,14 @@ Intensives Prompt-Tuning über mehrere Sessions: Analyse-Qualität getestet mit 
 
 ## Was als nächstes kommt
 
-1. **PROJ-3: Streaming** — dringendste technische Baustelle (Vercel Hobby Timeout)
-2. **PROJ-2: Antwortgenerator** — zweiter API-Call, Disclaimer, Antwortvorlage für einfache Fälle
-3. **Sprachwahlschalter** auf der Ergebnis-Seite verdrahten (Button sichtbar, aber kein erneuter API-Call)
-4. **Strukturiertes `zahlungen`-Feld** im JSON-Schema für zuverlässigere Zahlungstabelle
+1. **PROJ-2: Antwortgenerator** — zweiter API-Call, Disclaimer, Antwortvorlage für einfache Fälle
+2. **Sprachwahlschalter** auf der Ergebnis-Seite verdrahten (Button sichtbar, aber kein erneuter API-Call)
+
+### Erledigt
+
+- **PROJ-3: Streaming** ✓ — `/api/analyse` gibt NDJSON-Stream zurück (progress/done/error Events). Hält Vercel-Verbindung offen, kein Timeout mehr. Lokal getestet: 89 Progress-Events + done.
+- **Strukturiertes `zahlungen`-Feld** ✓ — Zahlungstabelle ohne Regex
+- **Defensives Zod-Schema** ✓ — fehlende/null-Felder von Claude crashen nicht mehr die ganze Analyse (alle Freitext-Felder nullish→'', Arrays default [], Enums mit catch-Fallback). Hat realen Crash-Bug behoben (Bescheid ohne Abteilung)
 
 ---
 

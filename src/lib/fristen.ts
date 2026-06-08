@@ -1,10 +1,17 @@
 import { z } from 'zod';
 
+// Defensives Schema: LLM-Ausgabe variiert von Lauf zu Lauf. Ein einzelnes fehlendes/null Feld
+// darf NIEMALS die ganze Analyse verwerfen — jedes Feld hat einen sinnvollen Default.
+const text = z.string().nullish().transform((v) => v ?? '');
+// Enums tolerant: unbekannter/fehlender Wert fällt auf sicheren Default zurück
+const enumMit = <T extends [string, ...string[]]>(werte: T, fallback: T[number]) =>
+  z.enum(werte).catch(fallback).default(fallback);
+
 export const ZahlungSchema = z.object({
-  zeitraum: z.string(),
-  betrag: z.number(),
-  empfaenger: z.string(),
-  hinweis: z.string().optional().default(''),
+  zeitraum: text,
+  betrag: z.number().catch(0).default(0),
+  empfaenger: text,
+  hinweis: text.optional().default(''),
 });
 
 export type Zahlung = z.infer<typeof ZahlungSchema>;
@@ -13,49 +20,49 @@ export type Zahlung = z.infer<typeof ZahlungSchema>;
 export const AnalyseSchema = z.object({
   analyse: z.object({
     absender: z.object({
-      behoerde: z.string(),
-      abteilung: z.string(),
-      aktenzeichen: z.string(),
+      behoerde: text,
+      abteilung: text,
+      aktenzeichen: text,
     }),
-    dokumenttyp: z.string(),
-    risikokategorie: z.enum(['niedrig', 'mittel', 'hoch']),
+    dokumenttyp: text,
+    risikokategorie: enumMit(['niedrig', 'mittel', 'hoch'], 'mittel'),
     ampel: z.object({
-      status: z.enum(['rot', 'gelb', 'gruen']),
-      begruendung: z.string(),
+      status: enumMit(['rot', 'gelb', 'gruen'], 'rot'),
+      begruendung: text,
     }),
-    zusammenfassung: z.string(),
+    zusammenfassung: text,
     erklaerung: z.object({
-      sachverhalt: z.string(),
-      begruendung_behoerde: z.string(),
-      bedeutung_fuer_dich: z.string(),
+      sachverhalt: text,
+      begruendung_behoerde: text,
+      bedeutung_fuer_dich: text,
       rechtsgrundlagen: z.array(z.object({
-        paragraph: z.string(),
-        erklaerung: z.string(),
-      })),
+        paragraph: text,
+        erklaerung: text,
+      })).optional().default([]),
     }),
     fristen: z.array(z.object({
-      typ: z.string(),
-      beschreibung: z.string(),
-      frist_tage: z.number().nullable(),
-      frist_berechnung: z.string(),
-      bescheid_datum: z.string().nullable(),
-      rechtsgrundlage_frist: z.string().optional(),
-    })),
+      typ: text,
+      beschreibung: text,
+      frist_tage: z.number().nullable().catch(null).default(null),
+      frist_berechnung: text,
+      bescheid_datum: z.string().nullable().catch(null).default(null),
+      rechtsgrundlage_frist: text.optional(),
+    })).optional().default([]),
     handlungshinweise: z.array(z.object({
-      prioritaet: z.number(),
-      aktion: z.string(),
-      dringlichkeit: z.enum(['sofort', 'innerhalb_der_frist', 'optional']),
-      antworttyp: z.string(),
-      erklaerung: z.string(),
-    })),
+      prioritaet: z.number().catch(99).default(99),
+      aktion: text,
+      dringlichkeit: enumMit(['sofort', 'innerhalb_der_frist', 'optional'], 'innerhalb_der_frist'),
+      antworttyp: text,
+      erklaerung: text,
+    })).optional().default([]),
     eskalation: z.object({
-      beratung_empfohlen: z.boolean(),
-      begruendung: z.string(),
-      beratungsstellen: z.string(),
+      beratung_empfohlen: z.boolean().catch(false).default(false),
+      begruendung: text,
+      beratungsstellen: text,
     }),
     ocr_qualitaet: z.object({
-      confidence: z.enum(['hoch', 'mittel', 'niedrig']),
-      probleme: z.string(),
+      confidence: enumMit(['hoch', 'mittel', 'niedrig'], 'mittel'),
+      probleme: text,
     }),
     zahlungen: z.array(ZahlungSchema).optional().default([]),
   }),
