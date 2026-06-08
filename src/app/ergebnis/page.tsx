@@ -196,6 +196,55 @@ const ANTWORT_LABELS: Record<string, string> = {
   informationsanfrage: 'Auskunft / Akteneinsicht anfragen',
 };
 
+const ABSENDER_KEY = 'klaramt_absender';
+
+interface Absender {
+  name: string;
+  strasse: string;
+  plzOrt: string;
+}
+
+// Platzhalter clientseitig ersetzen — Absenderdaten verlassen das Gerät nie
+function fuelleBrief(text: string, abs: Absender): string {
+  const rep = (s: string, suchen: string, wert: string) => (wert.trim() ? s.split(suchen).join(wert.trim()) : s);
+  const d = new Date();
+  const datum = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
+  const ort = abs.plzOrt.replace(/^\s*\d{4,5}\s*/, '').trim();
+  let out = text;
+  out = rep(out, '[DEIN NAME]', abs.name);
+  out = rep(out, '[DEINE STRASSE UND HAUSNUMMER]', abs.strasse);
+  out = rep(out, '[DEINE PLZ UND ORT]', abs.plzOrt);
+  out = rep(out, '[ORT]', ort);
+  out = out.split('[DATUM]').join(datum);
+  return out;
+}
+
+function Feld({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
+  return (
+    <label style={{ display: 'block' }}>
+      <span style={{ fontSize: '0.6875rem', color: '#9c9087', fontWeight: 600 }}>{label}</span>
+      <input
+        type="text"
+        value={value}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+        style={{
+          width: '100%',
+          marginTop: '0.25rem',
+          padding: '0.5rem 0.625rem',
+          borderRadius: '8px',
+          border: '1.5px solid #e0d8cc',
+          background: '#faf8f4',
+          color: '#1a1814',
+          fontSize: '0.8125rem',
+          fontFamily: 'inherit',
+          boxSizing: 'border-box',
+        }}
+      />
+    </label>
+  );
+}
+
 type AnalyseInhalt = ErgebnisData['analyse']['analyse'];
 
 function Antwortgenerator({ a }: { a: AnalyseInhalt }) {
@@ -212,6 +261,29 @@ function Antwortgenerator({ a }: { a: AnalyseInhalt }) {
   const [brief, setBrief] = useState('');
   const [fehler, setFehler] = useState<string | null>(null);
   const [kopiert, setKopiert] = useState(false);
+  const [absender, setAbsender] = useState<Absender>({ name: '', strasse: '', plzOrt: '' });
+  const [empf, setEmpf] = useState({
+    behoerde: a.absender.behoerde,
+    abteilung: a.absender.abteilung,
+    aktenzeichen: a.absender.aktenzeichen,
+  });
+
+  useEffect(() => {
+    try {
+      const r = localStorage.getItem(ABSENDER_KEY);
+      if (r) setAbsender(JSON.parse(r));
+    } catch {
+      // ungültiger localStorage-Inhalt wird ignoriert
+    }
+  }, []);
+
+  function updateAbsender(feld: keyof Absender, wert: string) {
+    setAbsender((prev) => {
+      const next = { ...prev, [feld]: wert };
+      try { localStorage.setItem(ABSENDER_KEY, JSON.stringify(next)); } catch { /* localStorage nicht verfügbar */ }
+      return next;
+    });
+  }
 
   if (typen.length === 0) return null;
 
@@ -227,9 +299,9 @@ function Antwortgenerator({ a }: { a: AnalyseInhalt }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           antworttyp: typ,
-          behoerde: a.absender.behoerde,
-          abteilung: a.absender.abteilung,
-          aktenzeichen: a.absender.aktenzeichen,
+          behoerde: empf.behoerde,
+          abteilung: empf.abteilung,
+          aktenzeichen: empf.aktenzeichen,
           dokumenttyp: a.dokumenttyp,
           sprache: 'Deutsch',
         }),
@@ -239,7 +311,7 @@ function Antwortgenerator({ a }: { a: AnalyseInhalt }) {
         setFehler(data.fehler || 'Die Vorlage konnte nicht erstellt werden. Bitte versuche es erneut.');
         return;
       }
-      setBrief(data.brief);
+      setBrief(fuelleBrief(data.brief, absender));
     } catch {
       setFehler('Verbindungsfehler. Bitte prüfe deine Internetverbindung und versuche es erneut.');
     } finally {
@@ -384,6 +456,29 @@ function Antwortgenerator({ a }: { a: AnalyseInhalt }) {
       <p style={{ fontSize: '0.8125rem', color: '#7a6e63', lineHeight: 1.6, marginBottom: '1rem' }}>
         Wähle, was du tun möchtest. KlarAmt erstellt eine fristwahrende Vorlage zum Bearbeiten.
       </p>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem', marginBottom: '1.125rem' }}>
+        <div>
+          <p style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9c9087', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem' }}>
+            Deine Daten <span style={{ textTransform: 'none', fontWeight: 500, color: '#b0a498' }}>· optional, bleiben auf deinem Gerät</span>
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <Feld label="Name" value={absender.name} onChange={(v) => updateAbsender('name', v)} placeholder="Vor- und Nachname" />
+            <Feld label="Straße und Hausnummer" value={absender.strasse} onChange={(v) => updateAbsender('strasse', v)} placeholder="Musterstraße 1" />
+            <Feld label="PLZ und Ort" value={absender.plzOrt} onChange={(v) => updateAbsender('plzOrt', v)} placeholder="12345 Musterstadt" />
+          </div>
+        </div>
+        <div>
+          <p style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9c9087', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem' }}>
+            Empfänger <span style={{ textTransform: 'none', fontWeight: 500, color: '#b0a498' }}>· aus dem Bescheid, bei Bedarf korrigieren</span>
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <Feld label="Behörde" value={empf.behoerde} onChange={(v) => setEmpf((p) => ({ ...p, behoerde: v }))} />
+            <Feld label="Abteilung" value={empf.abteilung} onChange={(v) => setEmpf((p) => ({ ...p, abteilung: v }))} />
+            <Feld label="Aktenzeichen" value={empf.aktenzeichen} onChange={(v) => setEmpf((p) => ({ ...p, aktenzeichen: v }))} />
+          </div>
+        </div>
+      </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
         {typen.map((t) => (
