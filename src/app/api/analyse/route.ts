@@ -70,7 +70,15 @@ Analysiere das Dokument und liefere AUSSCHLIESSLICH ein JSON-Objekt zurück. Kei
     "ocr_qualitaet": {
       "confidence": "hoch | mittel | niedrig",
       "probleme": "Falls mittel/niedrig: Details."
-    }
+    },
+    "zahlungen": [
+      {
+        "zeitraum": "Lesbare Zeitangabe, z.B. 'Januar 2023' oder 'März bis Juli 2023' oder 'monatlich'",
+        "betrag": 674.92,
+        "empfaenger": "An wen geht das Geld, z.B. 'Auf dein Konto' oder 'Wohnungsbaugesellschaft Franken GmbH'",
+        "hinweis": "Optional: z.B. 'erhöht wegen Schulbedarf' oder leer lassen"
+      }
+    ]
   }
 }
 
@@ -187,15 +195,16 @@ REGELN:
       b) Direktzahlung an Dritte (z.B. Miete direkt an Vermieter/Wohnungsbaugesellschaft)
     - bedeutung_fuer_dich MUSS formulieren: "Von den [Gesamt] Euro gehen [X] Euro direkt an [Vermieter]. Auf dein Konto kommen je nach Monat etwa [Minimum] bis [Maximum] Euro."
     - Betragsrange: ALLE Auszahlungsbeträge aus dem Dokument prüfen und korrekt übernehmen — niedrigsten und höchsten Betrag nennen. Nicht erfinden oder schätzen.
-    - Alle Auszahlungsbeträge und Direktzahlungen ALS FRISTEN-EINTRÄGE erfassen (typ: "zahlung", frist_tage: null). Das ist PFLICHT — ohne diese Einträge erscheint keine Zahlungstabelle in der App.
-    - PFLICHTFORMAT Beschreibung: MUSS mit "= [Betrag] Euro" enden (für Anzeige in der rechten Spalte).
-    - BEISPIEL wie die fristen-Array für Bürgergeld aussehen MUSS:
-      { "typ": "zahlung", "beschreibung": "Auszahlung Januar 2023 auf dein Konto = 674,92 Euro", "frist_tage": null, "frist_berechnung": "", "bescheid_datum": "2023-01-01", "rechtsgrundlage_frist": "" }
-      { "typ": "zahlung", "beschreibung": "Auszahlung Februar 2023 auf dein Konto = 712,92 Euro", "frist_tage": null, "frist_berechnung": "", "bescheid_datum": "2023-02-01", "rechtsgrundlage_frist": "" }
-      { "typ": "zahlung", "beschreibung": "Auszahlung März bis Juli 2023 auf dein Konto = 654,92 Euro", "frist_tage": null, "frist_berechnung": "", "bescheid_datum": "2023-03-01", "rechtsgrundlage_frist": "" }
-      { "typ": "zahlung", "beschreibung": "Direktzahlung Miete an Wohnungsbaugesellschaft = 990,00 Euro", "frist_tage": null, "frist_berechnung": "", "bescheid_datum": "2023-01-01", "rechtsgrundlage_frist": "" }
-    - frist_tage MUSS null sein (nicht 0, nicht 30 — null).
-    - WEITERBEWILLIGUNGSANTRAG: NICHT als Fristeneintrag — als Handlungshinweis.
+    - Alle Auszahlungsbeträge und Direktzahlungen in das "zahlungen"-Array (NICHT als fristen-Einträge). Das ist PFLICHT — ohne zahlungen-Einträge erscheint keine Zahlungstabelle in der App.
+    - "betrag" ist eine Zahl (z.B. 674.92) — kein String, kein "Euro" dahinter.
+    - BEISPIEL für das zahlungen-Array bei Bürgergeld:
+      { "zeitraum": "Januar 2023", "betrag": 674.92, "empfaenger": "Auf dein Konto", "hinweis": "" }
+      { "zeitraum": "Februar 2023", "betrag": 712.92, "empfaenger": "Auf dein Konto", "hinweis": "" }
+      { "zeitraum": "März bis Juli 2023", "betrag": 654.92, "empfaenger": "Auf dein Konto", "hinweis": "" }
+      { "zeitraum": "August 2023", "betrag": 770.92, "empfaenger": "Auf dein Konto", "hinweis": "erhöht wegen Schulbedarf" }
+      { "zeitraum": "September bis Dezember 2023", "betrag": 654.92, "empfaenger": "Auf dein Konto", "hinweis": "" }
+      { "zeitraum": "monatlich (Januar bis Dezember 2023)", "betrag": 990.00, "empfaenger": "Wohnungsbaugesellschaft Franken GmbH", "hinweis": "Direktzahlung Miete" }
+    - WEITERBEWILLIGUNGSANTRAG: NICHT im zahlungen-Array — als Handlungshinweis.
     - Sondermonate: Februar und August können bei Familien mit Kindern wegen Schulbedarf höhere Beträge haben — wenn erkennbar, erwähnen.
     - KONTODECKUNG: Bei Leistungsempfängern (Bürgergeld, Wohngeld) NIEMALS "Kontodeckung prüfen" als Handlungshinweis — der Nutzer EMPFÄNGT Zahlungen, er zahlt nicht. Kontodeckungs-Hinweise nur bei Lastschriften und Vorauszahlungen.
 

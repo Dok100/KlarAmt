@@ -1,5 +1,14 @@
 import { z } from 'zod';
 
+export const ZahlungSchema = z.object({
+  zeitraum: z.string(),
+  betrag: z.number(),
+  empfaenger: z.string(),
+  hinweis: z.string().optional().default(''),
+});
+
+export type Zahlung = z.infer<typeof ZahlungSchema>;
+
 // Zod-Schema für die Claude-Antwort
 export const AnalyseSchema = z.object({
   analyse: z.object({
@@ -48,6 +57,7 @@ export const AnalyseSchema = z.object({
       confidence: z.enum(['hoch', 'mittel', 'niedrig']),
       probleme: z.string(),
     }),
+    zahlungen: z.array(ZahlungSchema).optional().default([]),
   }),
 });
 

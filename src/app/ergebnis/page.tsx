@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { FristErgebnis } from '@/lib/fristen';
+import type { FristErgebnis, Zahlung } from '@/lib/fristen';
 
 interface ErgebnisData {
   analyse: {
@@ -32,6 +32,7 @@ interface ErgebnisData {
       }[];
       eskalation: { beratung_empfohlen: boolean; begruendung: string; beratungsstellen: string };
       ocr_qualitaet: { confidence: string; probleme: string };
+      zahlungen?: Zahlung[];
     };
     berechnete_fristen: (FristErgebnis | null)[];
   };
@@ -256,24 +257,54 @@ export default function ErgebnisSeite() {
           </div>
         )}
 
-        {/* Zahlungsfristen — tabellarisch, Datumsfilterung übernimmt Claude per Prompt */}
+        {/* Zahlungstabelle — aus strukturiertem zahlungen-Feld (Bürgergeld) oder fristen-Array (Steuerbescheid) */}
         {(() => {
-          const zahlungen = a.fristen.filter(f => f.frist_tage === null && f.bescheid_datum);
-          if (zahlungen.length === 0) return null;
+          // Neues strukturiertes Feld bevorzugen
+          const strukturiert = a.zahlungen ?? [];
+          if (strukturiert.length > 0) {
+            return (
+              <div style={{ background: '#faf8f4', border: '1px solid #e0d8cc', borderRadius: '12px', overflow: 'hidden' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', padding: '0.625rem 1rem', borderBottom: '1px solid #e0d8cc', background: '#f3ede1' }}>
+                  <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9c9087', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Zahlungen laut Bescheid</span>
+                  <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9c9087', textTransform: 'uppercase', letterSpacing: '0.07em', textAlign: 'right' }}>Betrag</span>
+                </div>
+                {strukturiert.map((z, i) => (
+                  <div key={i} style={{
+                    display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '0.75rem',
+                    padding: '0.75rem 1rem',
+                    borderBottom: i < strukturiert.length - 1 ? '1px solid #e0d8cc' : 'none',
+                  }}>
+                    <div>
+                      <p style={{ fontWeight: 600, fontSize: '0.875rem', color: '#1a1814', letterSpacing: '-0.01em' }}>{z.zeitraum}</p>
+                      <p style={{ fontSize: '0.75rem', color: '#9c9087', marginTop: '0.15rem', lineHeight: 1.4 }}>
+                        {z.empfaenger}{z.hinweis ? ` · ${z.hinweis}` : ''}
+                      </p>
+                    </div>
+                    <span style={{ fontWeight: 700, fontSize: '1rem', color: '#1a1814', whiteSpace: 'nowrap', textAlign: 'right' }}>
+                      {z.betrag.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
+                    </span>
+                  </div>
+                ))}
+              </div>
+            );
+          }
+          // Fallback: fristen-basierte Tabelle für Steuerbescheide
+          const fristenZahlungen = a.fristen.filter(f => f.frist_tage === null && f.bescheid_datum);
+          if (fristenZahlungen.length === 0) return null;
           return (
             <div style={{ background: '#faf8f4', border: '1px solid #e0d8cc', borderRadius: '12px', overflow: 'hidden' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', padding: '0.625rem 1rem', borderBottom: '1px solid #e0d8cc', background: '#f3ede1' }}>
                 <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9c9087', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Zahlungen laut Bescheid</span>
                 <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9c9087', textTransform: 'uppercase', letterSpacing: '0.07em', textAlign: 'right' }}>Betrag</span>
               </div>
-              {zahlungen.map((f, i) => {
+              {fristenZahlungen.map((f, i) => {
                 const betrag = extrahiereBetrag(f.beschreibung);
                 const beschreibungKurz = f.beschreibung.replace(/\s*=\s*[\d.,]+\s*(?:Euro|€).*$/, '').trim();
                 return (
                   <div key={i} style={{
                     display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '0.75rem',
                     padding: '0.75rem 1rem',
-                    borderBottom: i < zahlungen.length - 1 ? '1px solid #e0d8cc' : 'none',
+                    borderBottom: i < fristenZahlungen.length - 1 ? '1px solid #e0d8cc' : 'none',
                   }}>
                     <div>
                       <p style={{ fontWeight: 600, fontSize: '0.875rem', color: '#1a1814', letterSpacing: '-0.01em' }}>{formatDatum(f.bescheid_datum!)}</p>
