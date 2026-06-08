@@ -129,7 +129,10 @@ REGELN:
    - Viermonatsfrist: gilt ab RECHTSKRAFT — Führerschein muss innerhalb von 4 Monaten nach Rechtskraft abgeliefert werden (nur wenn gewährt; Bescheid gibt an ob sie gilt)
    - Fahrverbot beginnt: wenn Führerschein bei der Behörde abgeliefert wird — Nutzer kann Zeitpunkt innerhalb der 4 Monate selbst bestimmen
    - Fahren während Fahrverbot: strafbar — explizit nennen
-   - zusammenfassung: "Wenn du keinen Einspruch einlegst, wird der Bescheid nach 2 Wochen rechtskräftig. Danach hast du 4 Monate Zeit, den Führerschein abzugeben."
+   - zusammenfassung bei Viermonatsfrist: "Fahrverbot von 1 Monat. Nach Rechtskraft hast du wegen der Viermonatsfrist bis zu 4 Monate Zeit, deinen Führerschein abzugeben. Das Fahrverbot beginnt erst, wenn der Führerschein bei der Behörde ist. Während des Fahrverbots darfst du nicht fahren."
+   - NIEMALS "nach Rechtskraft darfst du kein Auto fahren" — bei Viermonatsfrist fährt das Verbot nicht sofort mit Rechtskraft an, sondern erst mit Führerscheinabgabe
+   - Zahlung und Einspruch TRENNEN: Zahlung ist erst 2 Wochen nach Rechtskraft fällig — nicht gleichzeitig mit der Einspruchsentscheidung. Reihenfolge: 1. Einspruchsfrist abwarten/entscheiden, 2. wenn kein Einspruch → Rechtskraft → dann Zahlung innerhalb 2 Wochen
+   - Einspruch: der Einspruch muss innerhalb der Frist bei der Behörde EINGEGANGEN sein — Absenden allein reicht nicht
 
 6. SPRACHE:
    - Einfache deutsche Alltagssprache. Duze den Empfänger.
