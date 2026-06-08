@@ -23,8 +23,6 @@ Intensives Prompt-Tuning über mehrere Sessions: Analyse-Qualität getestet mit 
 
 ## Bekannte offene Punkte
 
-- Bürgergeld-Zahlungstabelle erscheint nur wenn Claude das `= X Euro`-Format im Fristen-Eintrag einhält — gelegentlich inkonsistent
-- Streaming (PROJ-3) noch nicht implementiert — auf Vercel Hobby kann es bei langen Dokumenten zu Timeouts kommen
 - `console.error` Debug-Logs noch im Code (vor öffentlichem Launch entfernen)
 - Domain klaramt.app noch nicht registriert
 - Anthropic DPA vor öffentlichem Launch abschließen
@@ -39,8 +37,9 @@ Intensives Prompt-Tuning über mehrere Sessions: Analyse-Qualität getestet mit 
 ### Erledigt
 
 - **PROJ-3: Streaming** ✓ — `/api/analyse` gibt NDJSON-Stream zurück (progress/done/error Events). Hält Vercel-Verbindung offen, kein Timeout mehr. Lokal getestet: 89 Progress-Events + done.
-- **Strukturiertes `zahlungen`-Feld** ✓ — Zahlungstabelle ohne Regex
+- **Strukturiertes `zahlungen`-Feld** ✓ — Zahlungstabelle ohne Regex, mit `richtung`-Feld (du_zahlst/du_bekommst), UI zeigt +/− und grün/dunkel
 - **Defensives Zod-Schema** ✓ — fehlende/null-Felder von Claude crashen nicht mehr die ganze Analyse (alle Freitext-Felder nullish→'', Arrays default [], Enums mit catch-Fallback). Hat realen Crash-Bug behoben (Bescheid ohne Abteilung)
+- **Zahlungsrichtung** ✓ — Erstattung vs. Nachzahlung sicher unterschieden ("einziehen"-Definition, Richtungsregel per Verb statt Vorzeichen). Getestet mit Steuer-, Bürgergeld-, Bußgeld- und Stromrechnung
 
 ---
 
