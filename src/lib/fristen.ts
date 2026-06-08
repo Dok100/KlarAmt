@@ -11,6 +11,8 @@ export const ZahlungSchema = z.object({
   zeitraum: text,
   betrag: z.number().catch(0).default(0),
   empfaenger: text,
+  // Richtung erzwingt eine explizite Entscheidung pro Zeile — verhindert widersprüchliche Aussagen
+  richtung: enumMit(['du_zahlst', 'du_bekommst'], 'du_zahlst'),
   hinweis: text.optional().default(''),
 });
 

@@ -268,23 +268,27 @@ export default function ErgebnisSeite() {
                   <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9c9087', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Zahlungen laut Bescheid</span>
                   <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9c9087', textTransform: 'uppercase', letterSpacing: '0.07em', textAlign: 'right' }}>Betrag</span>
                 </div>
-                {strukturiert.map((z, i) => (
-                  <div key={i} style={{
-                    display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '0.75rem',
-                    padding: '0.75rem 1rem',
-                    borderBottom: i < strukturiert.length - 1 ? '1px solid #e0d8cc' : 'none',
-                  }}>
-                    <div>
-                      <p style={{ fontWeight: 600, fontSize: '0.875rem', color: '#1a1814', letterSpacing: '-0.01em' }}>{z.zeitraum}</p>
-                      <p style={{ fontSize: '0.75rem', color: '#9c9087', marginTop: '0.15rem', lineHeight: 1.4 }}>
-                        {z.empfaenger}{z.hinweis ? ` · ${z.hinweis}` : ''}
-                      </p>
+                {strukturiert.map((z, i) => {
+                  const bekommst = z.richtung === 'du_bekommst';
+                  const betragText = z.betrag.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                  return (
+                    <div key={i} style={{
+                      display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '0.75rem',
+                      padding: '0.75rem 1rem',
+                      borderBottom: i < strukturiert.length - 1 ? '1px solid #e0d8cc' : 'none',
+                    }}>
+                      <div>
+                        <p style={{ fontWeight: 600, fontSize: '0.875rem', color: '#1a1814', letterSpacing: '-0.01em' }}>{z.zeitraum}</p>
+                        <p style={{ fontSize: '0.75rem', color: '#9c9087', marginTop: '0.15rem', lineHeight: 1.4 }}>
+                          {bekommst ? 'Du bekommst' : 'Du zahlst'}{z.empfaenger ? ` · ${z.empfaenger}` : ''}{z.hinweis ? ` · ${z.hinweis}` : ''}
+                        </p>
+                      </div>
+                      <span style={{ fontWeight: 700, fontSize: '1rem', color: bekommst ? '#2d6a4f' : '#1a1814', whiteSpace: 'nowrap', textAlign: 'right' }}>
+                        {bekommst ? '+ ' : '− '}{betragText} €
+                      </span>
                     </div>
-                    <span style={{ fontWeight: 700, fontSize: '1rem', color: '#1a1814', whiteSpace: 'nowrap', textAlign: 'right' }}>
-                      {z.betrag.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             );
           }

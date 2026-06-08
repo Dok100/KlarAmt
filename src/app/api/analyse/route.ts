@@ -75,7 +75,8 @@ Analysiere das Dokument und liefere AUSSCHLIESSLICH ein JSON-Objekt zurück. Kei
       {
         "zeitraum": "Lesbare Zeitangabe, z.B. 'Januar 2023' oder 'März bis Juli 2023' oder 'monatlich'",
         "betrag": 674.92,
-        "empfaenger": "An wen geht das Geld, z.B. 'Auf dein Konto' oder 'Wohnungsbaugesellschaft Franken GmbH'",
+        "richtung": "du_zahlst | du_bekommst — du_zahlst = Geld verlässt dein Konto (Nachzahlung, Abschlag, Lastschrift-Einzug). du_bekommst = Geld kommt auf dein Konto (Erstattung, Guthaben, Gutschrift).",
+        "empfaenger": "Bei du_zahlst: an wen, z.B. 'EnBW'. Bei du_bekommst: woher, z.B. 'von EnBW auf dein Konto'.",
         "hinweis": "Optional: z.B. 'erhöht wegen Schulbedarf' oder leer lassen"
       }
     ]
@@ -154,21 +155,28 @@ REGELN:
 
 8. ZAHLUNGSTYPEN (häufigste Fehlerquelle — sorgfältig unterscheiden):
 
-   RICHTUNGSREGEL (kritisch, gilt für ALLE Dokumente — Steuer, Energie, Gebühren):
-   - Die Zahlungsrichtung bestimmt sich nach dem VERB der Geldbewegung, NICHT nach dem Vorzeichen der Zahl. Vorzeichen sind je nach Anbieter uneinheitlich (eine "Nachzahlung" kann als "-119,84 €" dargestellt sein und bedeutet trotzdem, dass DU zahlst).
-   - "wird eingezogen" / "wird abgebucht" / "von Ihrem Konto" / "bitte überweisen" / "Nachzahlung" / "Restbetrag" → DU ZAHLST (Geld verlässt dein Konto)
-   - "wird erstattet" / "wird überwiesen auf Ihr Konto" / "wird ausgezahlt" / "Guthaben" / "Gutschrift" → DU BEKOMMST GELD
-   - Im Zweifel: Suche den Satz, der beschreibt, wohin das Geld fließt. "von dem Konto ... eingezogen" = du zahlst. "auf das Konto ... erstattet" = du bekommst.
-   - KONSISTENZ: zusammenfassung, erklaerung und zahlungen MÜSSEN dieselbe Richtung nennen. NIEMALS in einem Satz "du bekommst zurück" und im nächsten "Nachzahlung wird eingezogen" — das ist widersprüchlich und falsch.
+   RICHTUNGSREGEL (KRITISCH — häufigster und schwerster Fehler. Gilt für ALLE Dokumente):
 
-   - ERSTATTUNG/GUTHABEN: Zu viel gezahlt → Nutzer bekommt Geld zurück (wird überwiesen/erstattet).
-   - NACHZAHLUNG: Fehlbetrag → Nutzer zahlt (wird eingezogen/abgebucht oder muss überweisen).
-   - VORAUSZAHLUNG/ABSCHLAG: Laufende Abschlagszahlung auf künftigen Verbrauch/Steuer. Wird meist per Lastschrift eingezogen.
+   SCHLÜSSELWÖRTER, die EINDEUTIG bedeuten DU ZAHLST (Geld verlässt dein Konto):
+   - "Nachzahlung" → DU ZAHLST. Ohne Ausnahme. Egal ob mit Minuszeichen (-119,84 €) dargestellt.
+   - "einziehen" / "Einzug" / "eingezogen" / "wird ... vom Konto eingezogen" → die Firma HOLT SICH Geld von DEINEM Konto per Lastschrift. Das Geld VERLÄSST dich. Das ist NIEMALS "Geld kommt zu dir".
+   - "abbuchen" / "abgebucht" / "Lastschrift" / "bitte überweisen" / "Restbetrag" / "Abschlag" → DU ZAHLST.
+
+   SCHLÜSSELWÖRTER, die EINDEUTIG bedeuten DU BEKOMMST GELD (Geld kommt auf dein Konto):
+   - "Guthaben" / "Erstattung" / "Gutschrift" / "wird erstattet" / "wird ausgezahlt" / "wird auf Ihr Konto überwiesen" → DU BEKOMMST.
+
+   ENTSCHEIDUNGSWEG: Suche zuerst das Label-Wort ("Nachzahlung" oder "Guthaben/Erstattung"). Das Label entscheidet. Das Vorzeichen der Zahl ist IRRELEVANT — Anbieter nutzen Minuszeichen uneinheitlich.
+
+   DURCHGERECHNETES BEISPIEL (Stromrechnung): "Ihre Zahlungen 1.563 €, Stromverbrauch -1.747,84 €, Vorteile +65 €, Ihre Nachzahlung = -119,84 €. Dieser Betrag wird am 5. Juni von dem Konto eingezogen." → Das Label ist "Nachzahlung", das Verb ist "eingezogen". ALSO: DU ZAHLST 119,84 €. richtung = "du_zahlst". Die 119,84 € werden von deinem Konto abgebucht. NICHT "du bekommst zurück".
+
+   KONSISTENZ: zusammenfassung, erklaerung.sachverhalt, erklaerung.bedeutung_fuer_dich und jeder zahlungen-Eintrag MÜSSEN dieselbe Richtung nennen. Ein widersprüchlicher Satz wie "wird eingezogen (Geld kommt zu dir)" ist verboten.
+
+   - ERSTATTUNG/GUTHABEN: Zu viel gezahlt → du bekommst Geld zurück.
+   - NACHZAHLUNG: Fehlbetrag → du zahlst (wird eingezogen/abgebucht oder du überweist).
+   - VORAUSZAHLUNG/ABSCHLAG: Laufende Abschlagszahlung → du zahlst, meist per Lastschrift.
 
    ENERGIEABRECHNUNG (Strom/Gas Jahresrechnung):
-   - "Nachzahlung" bedeutet IMMER: Du zahlst den Betrag (auch wenn mit Minuszeichen dargestellt). Prüfe den Einzugssatz ("wird ... eingezogen").
-   - "Guthaben"/"Erstattung" bedeutet: Du bekommst Geld zurück.
-   - Neuer "Abschlag" ist KEINE Nach- oder Rückzahlung — es ist der künftige monatliche Betrag. Separat nennen.
+   - Neuer "Abschlag" ist KEINE Nach- oder Rückzahlung — es ist der künftige monatliche Betrag, den DU zahlst. Separat nennen, richtung = "du_zahlst".
    - Verbrauchsvergleich (Vorjahr vs. aktuell) als Kontext erwähnen, wenn auffällig.
 
    Enthält ein Bescheid GLEICHZEITIG eine Erstattung (Vorjahr) UND Vorauszahlungen (Folgejahr):
@@ -211,13 +219,11 @@ REGELN:
     - Betragsrange: ALLE Auszahlungsbeträge aus dem Dokument prüfen und korrekt übernehmen — niedrigsten und höchsten Betrag nennen. Nicht erfinden oder schätzen.
     - Alle Auszahlungsbeträge und Direktzahlungen in das "zahlungen"-Array (NICHT als fristen-Einträge). Das ist PFLICHT — ohne zahlungen-Einträge erscheint keine Zahlungstabelle in der App.
     - "betrag" ist eine Zahl (z.B. 674.92) — kein String, kein "Euro" dahinter.
-    - BEISPIEL für das zahlungen-Array bei Bürgergeld:
-      { "zeitraum": "Januar 2023", "betrag": 674.92, "empfaenger": "Auf dein Konto", "hinweis": "" }
-      { "zeitraum": "Februar 2023", "betrag": 712.92, "empfaenger": "Auf dein Konto", "hinweis": "" }
-      { "zeitraum": "März bis Juli 2023", "betrag": 654.92, "empfaenger": "Auf dein Konto", "hinweis": "" }
-      { "zeitraum": "August 2023", "betrag": 770.92, "empfaenger": "Auf dein Konto", "hinweis": "erhöht wegen Schulbedarf" }
-      { "zeitraum": "September bis Dezember 2023", "betrag": 654.92, "empfaenger": "Auf dein Konto", "hinweis": "" }
-      { "zeitraum": "monatlich (Januar bis Dezember 2023)", "betrag": 990.00, "empfaenger": "Wohnungsbaugesellschaft Franken GmbH", "hinweis": "Direktzahlung Miete" }
+    - BEISPIEL für das zahlungen-Array bei Bürgergeld (alle richtung "du_bekommst" — du empfängst Leistungen):
+      { "zeitraum": "Januar 2023", "betrag": 674.92, "richtung": "du_bekommst", "empfaenger": "Auf dein Konto", "hinweis": "" }
+      { "zeitraum": "März bis Juli 2023", "betrag": 654.92, "richtung": "du_bekommst", "empfaenger": "Auf dein Konto", "hinweis": "" }
+      { "zeitraum": "August 2023", "betrag": 770.92, "richtung": "du_bekommst", "empfaenger": "Auf dein Konto", "hinweis": "erhöht wegen Schulbedarf" }
+      { "zeitraum": "monatlich (Jan–Dez 2023)", "betrag": 990.00, "richtung": "du_zahlst", "empfaenger": "Wohnungsbaugesellschaft (Direktzahlung Miete)", "hinweis": "zahlt das Jobcenter direkt für dich" }
     - WEITERBEWILLIGUNGSANTRAG: NICHT im zahlungen-Array — als Handlungshinweis.
     - Sondermonate: Februar und August können bei Familien mit Kindern wegen Schulbedarf höhere Beträge haben — wenn erkennbar, erwähnen.
     - KONTODECKUNG: Bei Leistungsempfängern (Bürgergeld, Wohngeld) NIEMALS "Kontodeckung prüfen" als Handlungshinweis — der Nutzer EMPFÄNGT Zahlungen, er zahlt nicht. Kontodeckungs-Hinweise nur bei Lastschriften und Vorauszahlungen.
