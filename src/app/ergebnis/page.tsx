@@ -313,8 +313,8 @@ export default function ErgebnisSeite() {
           )}
         </Aufklappbar>
 
-        {/* Handlungshinweise */}
-        <Aufklappbar titel="Was kann ich tun?">
+        {/* Handlungshinweise — bei ROT standardmäßig offen */}
+        <Aufklappbar titel="Was kann ich tun?" defaultOffen={a.ampel.status === 'rot'}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', paddingTop: '0.75rem' }}>
             {a.handlungshinweise.map((h, i) => (
               <div key={i} style={{ display: 'flex', gap: '0.75rem' }}>

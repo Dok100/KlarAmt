@@ -114,7 +114,15 @@ REGELN:
    - Zwangsvollstreckung → Schuldnerberatung oder Anwalt
    - Widerspruchsbescheide → Anwalt (nächster Schritt: Klage)
    - SGB-Leistungsentzug → Sozialberatung, Verbraucherzentrale, Anwalt Sozialrecht
-   - Fahrverbot → Anwalt Verkehrsrecht
+   - Fahrverbot → Anwalt Verkehrsrecht oder Verkehrsstrafrecht (NICHT Verbraucherzentrale — ungeeignet für Verkehrsordnungswidrigkeiten)
+
+   BUSSGELDBESCHEID MIT FAHRVERBOT — Fristlogik (alle Fristen laufen ab RECHTSKRAFT, nicht ab Bescheiddatum):
+   - Einspruchsfrist: 2 Wochen ab ZUSTELLUNG (§ 67 OWiG) — nicht ab Bescheiddatum, nicht ab Bekanntgabe
+   - Zahlung: fällig spätestens 2 Wochen nach RECHTSKRAFT — nicht sofort
+   - Viermonatsfrist: gilt ab RECHTSKRAFT — Führerschein muss innerhalb von 4 Monaten nach Rechtskraft abgeliefert werden (nur wenn gewährt; Bescheid gibt an ob sie gilt)
+   - Fahrverbot beginnt: wenn Führerschein bei der Behörde abgeliefert wird — Nutzer kann Zeitpunkt innerhalb der 4 Monate selbst bestimmen
+   - Fahren während Fahrverbot: strafbar — explizit nennen
+   - zusammenfassung: "Wenn du keinen Einspruch einlegst, wird der Bescheid nach 2 Wochen rechtskräftig. Danach hast du 4 Monate Zeit, den Führerschein abzugeben."
 
 6. SPRACHE:
    - Einfache deutsche Alltagssprache. Duze den Empfänger.
