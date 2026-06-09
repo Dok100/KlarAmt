@@ -33,3 +33,35 @@ body {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* Standardmäßig nur am Bildschirm sichtbar */
+.nur-druck {
+  display: none;
+}
+
+@media print {
+  /* Interaktive Elemente nicht aufs Papier */
+  .kein-druck {
+    display: none !important;
+  }
+
+  /* Aufklapp-Titel beim Drucken einblenden (Button ist ausgeblendet) */
+  .nur-druck {
+    display: block !important;
+  }
+
+  /* Hintergrund- und Ampelfarben mitdrucken */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  /* Karten nicht über Seitenumbrüche zerreißen */
+  main > div > * {
+    break-inside: avoid;
+  }
+}

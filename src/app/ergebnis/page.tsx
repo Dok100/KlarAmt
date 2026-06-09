@@ -104,12 +104,14 @@ function Label({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Aufklappbar({ titel, children, defaultOffen = false }: { titel: string; children: React.ReactNode; defaultOffen?: boolean }) {
+function Aufklappbar({ titel, children, defaultOffen = false, erzwingeOffen = false }: { titel: string; children: React.ReactNode; defaultOffen?: boolean; erzwingeOffen?: boolean }) {
   const [offen, setOffen] = useState(defaultOffen);
+  const sichtbar = offen || erzwingeOffen;
   return (
     <div style={{ border: '1px solid #e0d8cc', borderRadius: '12px', overflow: 'hidden', background: '#faf8f4' }}>
       <button
         onClick={() => setOffen(!offen)}
+        className="kein-druck"
         style={{
           width: '100%',
           display: 'flex',
@@ -131,10 +133,12 @@ function Aufklappbar({ titel, children, defaultOffen = false }: { titel: string;
           {offen ? '−' : '+'}
         </span>
       </button>
-      {offen && (
+      {/* Beim Drucken Titel sichtbar machen (der Button ist ausgeblendet) */}
+      <p className="nur-druck" style={{ display: 'none', padding: '1rem 1.125rem 0', fontWeight: 700, fontSize: '0.9375rem', color: '#1a1814' }}>{titel}</p>
+      {sichtbar && (
         <div style={{
           padding: '0 1.125rem 1.125rem',
-          borderTop: '1px solid #e0d8cc',
+          borderTop: erzwingeOffen && !offen ? 'none' : '1px solid #e0d8cc',
           display: 'flex',
           flexDirection: 'column',
           gap: '0.75rem',
@@ -579,12 +583,20 @@ function Antwortgenerator({ a }: { a: AnalyseInhalt }) {
 export default function ErgebnisSeite() {
   const router = useRouter();
   const [daten, setDaten] = useState<ErgebnisData | null>(null);
+  const [drucken, setDrucken] = useState(false);
 
   useEffect(() => {
     const raw = sessionStorage.getItem('klaramt_ergebnis');
     if (!raw) { router.push('/'); return; }
     setDaten(JSON.parse(raw));
   }, [router]);
+
+  // Aufklappbare zuerst aufklappen, dann Druckdialog öffnen
+  useEffect(() => {
+    if (!drucken) return;
+    const t = setTimeout(() => { window.print(); setDrucken(false); }, 80);
+    return () => clearTimeout(t);
+  }, [drucken]);
 
   if (!daten) return null;
 
@@ -601,12 +613,20 @@ export default function ErgebnisSeite() {
       {/* Header */}
       <div style={{ maxWidth: '520px', margin: '0 auto', padding: '1.125rem 1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Wordmark />
-        <button
-          onClick={() => router.push('/')}
-          style={{ fontSize: '0.875rem', color: '#7a6e63', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500, textDecoration: 'underline', textUnderlineOffset: '3px' }}
-        >
-          Neuer Brief
-        </button>
+        <div className="kein-druck" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <button
+            onClick={() => setDrucken(true)}
+            style={{ fontSize: '0.875rem', color: '#7a6e63', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500, textDecoration: 'underline', textUnderlineOffset: '3px' }}
+          >
+            Drucken
+          </button>
+          <button
+            onClick={() => router.push('/')}
+            style={{ fontSize: '0.875rem', color: '#7a6e63', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500, textDecoration: 'underline', textUnderlineOffset: '3px' }}
+          >
+            Neuer Brief
+          </button>
+        </div>
       </div>
 
       <div style={{ maxWidth: '520px', margin: '0 auto', padding: '0 1.25rem', display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
@@ -721,7 +741,7 @@ export default function ErgebnisSeite() {
         )}
 
         {/* Erklärung */}
-        <Aufklappbar titel="Erklärung — was steht da?">
+        <Aufklappbar titel="Erklärung — was steht da?" erzwingeOffen={drucken}>
           <p style={{ fontSize: '0.875rem', color: '#3d3530', lineHeight: 1.7, paddingTop: '0.75rem' }}>{a.erklaerung.sachverhalt}</p>
           <p style={{ fontSize: '0.875rem', color: '#7a6e63', lineHeight: 1.7 }}>{a.erklaerung.begruendung_behoerde}</p>
           <p style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1a1814', lineHeight: 1.65 }}>{a.erklaerung.bedeutung_fuer_dich}</p>
@@ -738,7 +758,7 @@ export default function ErgebnisSeite() {
         </Aufklappbar>
 
         {/* Handlungshinweise — bei ROT standardmäßig offen */}
-        <Aufklappbar titel="Was kann ich tun?" defaultOffen={a.ampel.status === 'rot'}>
+        <Aufklappbar titel="Was kann ich tun?" defaultOffen={a.ampel.status === 'rot'} erzwingeOffen={drucken}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', paddingTop: '0.75rem' }}>
             {a.handlungshinweise.map((h, i) => (
               <div key={i} style={{ display: 'flex', gap: '0.75rem' }}>
@@ -778,18 +798,20 @@ export default function ErgebnisSeite() {
           </div>
         )}
 
-        {/* Antwortgenerator */}
-        {daten.antwortgenerierung.erlaubt ? (
-          <Antwortgenerator a={a} />
-        ) : daten.antwortgenerierung.grund ? (
-          <Card>
-            <p style={{ fontWeight: 600, color: '#1a1814', fontSize: '0.875rem', marginBottom: '0.375rem' }}>Kein Antwortgenerator</p>
-            <p style={{ fontSize: '0.875rem', color: '#3d3530', lineHeight: 1.6 }}>{daten.antwortgenerierung.grund}</p>
-            {daten.antwortgenerierung.beratungsstellen && (
-              <p style={{ fontSize: '0.875rem', color: '#7a6e63', marginTop: '0.5rem', lineHeight: 1.6 }}>{daten.antwortgenerierung.beratungsstellen}</p>
-            )}
-          </Card>
-        ) : null}
+        {/* Antwortgenerator — nicht aufs Papier */}
+        <div className="kein-druck">
+          {daten.antwortgenerierung.erlaubt ? (
+            <Antwortgenerator a={a} />
+          ) : daten.antwortgenerierung.grund ? (
+            <Card>
+              <p style={{ fontWeight: 600, color: '#1a1814', fontSize: '0.875rem', marginBottom: '0.375rem' }}>Kein Antwortgenerator</p>
+              <p style={{ fontSize: '0.875rem', color: '#3d3530', lineHeight: 1.6 }}>{daten.antwortgenerierung.grund}</p>
+              {daten.antwortgenerierung.beratungsstellen && (
+                <p style={{ fontSize: '0.875rem', color: '#7a6e63', marginTop: '0.5rem', lineHeight: 1.6 }}>{daten.antwortgenerierung.beratungsstellen}</p>
+              )}
+            </Card>
+          ) : null}
+        </div>
 
         {daten.meta.textGekuerzt && (
           <p style={{ textAlign: 'center', fontSize: '0.75rem', color: '#9c9087' }}>
