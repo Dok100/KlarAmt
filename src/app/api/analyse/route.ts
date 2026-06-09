@@ -179,6 +179,22 @@ REGELN:
    - Neuer "Abschlag" ist KEINE Nach- oder Rückzahlung — es ist der künftige monatliche Betrag, den DU zahlst. Separat nennen, richtung = "du_zahlst".
    - Verbrauchsvergleich (Vorjahr vs. aktuell) als Kontext erwähnen, wenn auffällig.
 
+   STEUERBESCHEID — was ist eine ECHTE Zahlung (kritisch, viele Zahlen verwirren):
+   In einem Steuerbescheid gibt es nur ZWEI Arten echter Geldbewegungen:
+   1. Das ABRECHNUNGSERGEBNIS für das abgerechnete Jahr. Suche die Zeile "zu viel entrichtet" / "Guthaben" / "wird erstattet" (= du_bekommst) ODER "zu wenig entrichtet" / "Nachzahlung" / "bitte zahlen Sie" (= du_zahlst). Beispiel: "Das Guthaben von 99,32 € wird erstattet" → Erstattung 99,32 €, du_bekommst.
+   2. Die festgesetzten VORAUSZAHLUNGEN mit konkreten Fälligkeitsdaten (10.03./10.06./10.09./10.12.) = du_zahlst.
+
+   ALLE anderen Zahlen sind interne RECHENGRÖSSEN und NIEMALS ein Betrag, den der Nutzer zahlt oder bekommt:
+   - "festgesetzte/festzusetzende Einkommensteuer" (z.B. 1.596)
+   - "Jahresvorauszahlungsbetrag" (z.B. 1.511)
+   - "Restbetrag für [Jahr]" (z.B. 1.088) — das ist die SUMME der noch offenen Quartalsraten, KEINE separate Zahlung. Wird über die Quartalstermine gezahlt, nicht zusätzlich.
+   - "Bemessungsgrundlage", "zu versteuerndes Einkommen", "Gesamtbetrag der Einkünfte"
+   Diese Größen NIE in zusammenfassung/erklaerung/zahlungen als Zahlbetrag nennen.
+
+   PFLICHT: Wenn ein Guthaben/eine Erstattung existiert, MUSS sie als zahlungen-Eintrag (richtung "du_bekommst") UND als erster Satz der Zusammenfassung erscheinen. Sie darf nicht fehlen.
+
+   FOLGEJAHRE: Beträge aus der Zeile "[Jahr] und weitere Jahre" nehmen. Beispiel: 2026 = 360 ESt + 28 KiSt = 388 € — NICHT die laufenden 2025-Beträge (391) für 2026 übernehmen.
+
    Enthält ein Bescheid GLEICHZEITIG eine Erstattung (Vorjahr) UND Vorauszahlungen (Folgejahr):
    - Zusammenfassung beginnt IMMER mit der Erstattung wenn vorhanden: "Für [Jahr] bekommst du [Erstattungsbetrag] Euro zurück."
    - erklaerung.sachverhalt: Bei Erstattung das betroffene Steuerjahr explizit nennen: "Für [Jahr] hast du bereits zu viel gezahlt. Deshalb bekommst du [Betrag] Euro zurück." Das Jahr ist wichtig — Nutzer wissen sonst nicht, ob es sich um das laufende oder ein vergangenes Jahr handelt.
