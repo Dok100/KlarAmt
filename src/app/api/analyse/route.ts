@@ -195,6 +195,12 @@ REGELN:
 
    FOLGEJAHRE: Beträge aus der Zeile "[Jahr] und weitere Jahre" nehmen. Beispiel: 2026 = 360 ESt + 28 KiSt = 388 € — NICHT die laufenden 2025-Beträge (391) für 2026 übernehmen.
 
+   VORAUSZAHLUNGSBETRAG pro Termin — zuverlässig bestimmen (Vision-Lesefehler vermeiden):
+   - Wenn der Bescheid einen Gesamtbetrag pro Fälligkeit nennt ("Aufgrund des Mandats wird der Gesamtbetrag von 391,00 € ... eingezogen"), nutze GENAU diesen Betrag als Quartalsbetrag. NICHT selbst aus Einzelspalten zusammenrechnen — der genannte Gesamtbetrag ist der Anker.
+   - Solidaritätszuschlag ist seit 2021 für fast alle Steuerzahler 0,00 €. Wenn die Soli-Zeile 0 zeigt: KEINEN Soli-Betrag aufnehmen.
+   - PLAUSIBILITÄT: Soli ist maximal 5,5% der Einkommensteuer. Bei 362 € ESt wäre Soli höchstens ~20 €. Ein vermeintlicher Soli von 360 € neben 362 € ESt ist ein SPALTEN-LESEFEHLER (die 360 ist die ESt eines anderen Jahres) — verwerfen, nicht übernehmen.
+   - Der Quartalsbetrag besteht praktisch nur aus ESt + KiSt (Soli = 0). Beispiel: 362 + 29 = 391, NICHT 362 + 360 + 29.
+
    Enthält ein Bescheid GLEICHZEITIG eine Erstattung (Vorjahr) UND Vorauszahlungen (Folgejahr):
    - Zusammenfassung beginnt IMMER mit der Erstattung wenn vorhanden: "Für [Jahr] bekommst du [Erstattungsbetrag] Euro zurück."
    - erklaerung.sachverhalt: Bei Erstattung das betroffene Steuerjahr explizit nennen: "Für [Jahr] hast du bereits zu viel gezahlt. Deshalb bekommst du [Betrag] Euro zurück." Das Jahr ist wichtig — Nutzer wissen sonst nicht, ob es sich um das laufende oder ein vergangenes Jahr handelt.

@@ -461,36 +461,12 @@ function Antwortgenerator({ a }: { a: AnalyseInhalt }) {
         Wähle, was du tun möchtest. KlarAmt erstellt eine fristwahrende Vorlage zum Bearbeiten.
       </p>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem', marginBottom: '1.125rem' }}>
-        <div>
-          <p style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9c9087', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem' }}>
-            Deine Daten <span style={{ textTransform: 'none', fontWeight: 500, color: '#b0a498' }}>· optional, bleiben auf deinem Gerät</span>
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <Feld label="Name" value={absender.name} onChange={(v) => updateAbsender('name', v)} placeholder="Vor- und Nachname" />
-            <Feld label="Straße und Hausnummer" value={absender.strasse} onChange={(v) => updateAbsender('strasse', v)} placeholder="Musterstraße 1" />
-            <Feld label="PLZ und Ort" value={absender.plzOrt} onChange={(v) => updateAbsender('plzOrt', v)} placeholder="12345 Musterstadt" />
-          </div>
-        </div>
-        <div>
-          <p style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9c9087', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem' }}>
-            Empfänger <span style={{ textTransform: 'none', fontWeight: 500, color: '#b0a498' }}>· aus dem Bescheid, bei Bedarf korrigieren</span>
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <Feld label="Behörde" value={empf.behoerde} onChange={(v) => setEmpf((p) => ({ ...p, behoerde: v }))} />
-            <Feld label="Abteilung" value={empf.abteilung} onChange={(v) => setEmpf((p) => ({ ...p, abteilung: v }))} />
-            <Feld label="Straße und Hausnummer" value={empf.strasse} onChange={(v) => setEmpf((p) => ({ ...p, strasse: v }))} placeholder="aus dem Briefkopf" />
-            <Feld label="PLZ und Ort" value={empf.plzOrt} onChange={(v) => setEmpf((p) => ({ ...p, plzOrt: v }))} placeholder="aus dem Briefkopf" />
-            <Feld label="Aktenzeichen" value={empf.aktenzeichen} onChange={(v) => setEmpf((p) => ({ ...p, aktenzeichen: v }))} />
-          </div>
-        </div>
-      </div>
-
+      {/* Schritt 1: Aktion wählen */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
         {typen.map((t) => (
           <button
             key={t}
-            onClick={() => generiere(t)}
+            onClick={() => { setGewaehlt(t); setBrief(''); setFehler(null); setKopiert(false); }}
             disabled={laedt}
             style={{
               textAlign: 'left',
@@ -509,6 +485,40 @@ function Antwortgenerator({ a }: { a: AnalyseInhalt }) {
           </button>
         ))}
       </div>
+
+      {/* Schritt 2: Daten erst nach Auswahl */}
+      {gewaehlt && !brief && !laedt && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem', marginTop: '1.125rem' }}>
+          <div>
+            <p style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9c9087', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem' }}>
+              Deine Daten <span style={{ textTransform: 'none', fontWeight: 500, color: '#b0a498' }}>· optional, bleiben auf deinem Gerät</span>
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <Feld label="Name" value={absender.name} onChange={(v) => updateAbsender('name', v)} placeholder="Vor- und Nachname" />
+              <Feld label="Straße und Hausnummer" value={absender.strasse} onChange={(v) => updateAbsender('strasse', v)} placeholder="Musterstraße 1" />
+              <Feld label="PLZ und Ort" value={absender.plzOrt} onChange={(v) => updateAbsender('plzOrt', v)} placeholder="12345 Musterstadt" />
+            </div>
+          </div>
+          <div>
+            <p style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#9c9087', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem' }}>
+              Empfänger <span style={{ textTransform: 'none', fontWeight: 500, color: '#b0a498' }}>· aus dem Bescheid, bei Bedarf korrigieren</span>
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <Feld label="Behörde" value={empf.behoerde} onChange={(v) => setEmpf((p) => ({ ...p, behoerde: v }))} />
+              <Feld label="Abteilung" value={empf.abteilung} onChange={(v) => setEmpf((p) => ({ ...p, abteilung: v }))} />
+              <Feld label="Straße und Hausnummer" value={empf.strasse} onChange={(v) => setEmpf((p) => ({ ...p, strasse: v }))} placeholder="aus dem Briefkopf" />
+              <Feld label="PLZ und Ort" value={empf.plzOrt} onChange={(v) => setEmpf((p) => ({ ...p, plzOrt: v }))} placeholder="aus dem Briefkopf" />
+              <Feld label="Aktenzeichen" value={empf.aktenzeichen} onChange={(v) => setEmpf((p) => ({ ...p, aktenzeichen: v }))} />
+            </div>
+          </div>
+          <button
+            onClick={() => generiere(gewaehlt)}
+            style={{ width: '100%', background: '#1a1814', color: '#f3ede1', fontWeight: 600, fontSize: '0.9375rem', padding: '0.875rem', borderRadius: '10px', border: 'none', cursor: 'pointer', letterSpacing: '-0.01em', marginTop: '0.25rem' }}
+          >
+            Vorlage erstellen
+          </button>
+        </div>
+      )}
 
       {laedt && (
         <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
