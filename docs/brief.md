@@ -24,7 +24,7 @@ Nutzer öffnen KlarAmt auf dem Handy, fotografieren den Brief oder laden die PDF
 
 - Eine Ampel (rot/gelb/grün) mit sofortiger Einschätzung
 - Einen Frist-Countdown in Tagen
-- Eine Erklärung in einfacher Alltagssprache (auf Wunsch auf Türkisch, Arabisch, Ukrainisch oder Englisch)
+- Eine Erklärung in einfacher Alltagssprache (auf Wunsch auf Türkisch, Arabisch, Ukrainisch, Russisch, Polnisch oder Englisch)
 - Konkrete Handlungsoptionen (sachlich, keine Rechtsberatung)
 - Einen fertigen Formulierungsvorschlag wenn nötig
 
@@ -43,7 +43,7 @@ Was muss unbedingt funktionieren:
 3. Regelbasierte Vorklassifikation (Dokumenttyp + Schlüsselbegriffe) vor dem LLM-Call
 4. Drei-Ebenen-Analyse via Claude API mit Zod-Validierung
 5. Ampel + deterministisch berechneter Frist-Countdown
-6. Erklärung in 5 Sprachen (Deutsch, Türkisch, Arabisch, Ukrainisch, Englisch)
+6. Erklärung in 7 Sprachen (Deutsch, Türkisch, Arabisch, Ukrainisch, Russisch, Polnisch, Englisch)
 7. Antwortgenerator (4 Typen, nur bei Risiko niedrig/mittel)
 8. localStorage-Counter (3 kostenlose Analysen, rote Ampel immer frei)
 9. Vertrauens-UX im Upload-Flow: „Was passiert mit deinem Brief?"

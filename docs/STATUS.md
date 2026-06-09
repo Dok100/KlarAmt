@@ -31,10 +31,15 @@ Intensives Prompt-Tuning über mehrere Sessions: Analyse-Qualität getestet mit 
 
 ## Was als nächstes kommt
 
-1. **Sprachwahlschalter** auf der Ergebnis-Seite verdrahten (Button sichtbar, aber kein erneuter API-Call)
-2. **Launch-Vorbereitung**: Debug-Logs entfernen, Domain klaramt.app, Anthropic DPA
+1. **Launch-Vorbereitung**: Debug-Logs entfernen, Domain klaramt.app, Anthropic DPA
+
+### Verworfen
+
+- **Sprachwahlschalter auf der Ergebnis-Seite** — nicht nötig. Die Sprachauswahl auf dem Einstiegsbildschirm bestimmt bereits die Erklärungssprache. Ein zweiter Schalter würde nur einen erneuten kostenpflichtigen API-Call zum Neu-Übersetzen auslösen. Der Antwortbrief bleibt bewusst deutsch (Brief an deutsche Behörde).
 
 ### Erledigt
+
+- **Sprachen erweitert** ✓ — 7 Sprachen: Deutsch, Türkisch, Arabisch, Ukrainisch, Russisch, Polnisch, Englisch
 
 - **PROJ-2: Antwortgenerator** ✓ — `/api/antwort` (zweiter Claude-Call, RDG-sicher, nur fristwahrende Vorlagen ohne Begründung). Antworttypen aus Handlungshinweisen abgeleitet, nur bei Risiko niedrig/mittel. Editierbares Textfeld, Disclaimer, Kopieren + PDF-Download (jsPDF, DIN-5008-Layout, Umlaute verifiziert). Eingabemaske für Absender (clientseitige Platzhalter-Ersetzung, localStorage, verlässt das Gerät nie) und editierbaren Empfänger. Hochrisiko bekommt weiter keine Vorlage.
 - **PROJ-3: Streaming** ✓ — `/api/analyse` gibt NDJSON-Stream zurück (progress/done/error Events). Hält Vercel-Verbindung offen, kein Timeout mehr. Lokal getestet: 89 Progress-Events + done.

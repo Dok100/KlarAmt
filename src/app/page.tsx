@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-const SPRACHEN = ['Deutsch', 'Türkisch', 'Arabisch', 'Ukrainisch', 'Englisch'];
+const SPRACHEN = ['Deutsch', 'Türkisch', 'Arabisch', 'Ukrainisch', 'Russisch', 'Polnisch', 'Englisch'];
 const KONTINGENT_KEY = 'klaramt_analysen';
 const CONSENT_KEY = 'klaramt_consent';
 const LIMIT = 3;
