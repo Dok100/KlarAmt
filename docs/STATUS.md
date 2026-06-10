@@ -23,6 +23,8 @@ Intensives Prompt-Tuning über mehrere Sessions: Analyse-Qualität getestet mit 
 
 ## Bekannte offene Punkte
 
+- **Upstash-Env-Variablen in Vercel setzen** — sonst greift das Rate-Limit NICHT (fail-open). `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` (siehe `.env.example`)
+- `/api/antwort` (Briefgenerator) hat noch kein Limit — günstig (Text, kurz), aber offener Endpoint
 - `console.error` Debug-Logs noch im Code (vor öffentlichem Launch entfernen)
 - Domain klaramt.app noch nicht registriert
 - Anthropic DPA vor öffentlichem Launch abschließen
@@ -38,6 +40,8 @@ Intensives Prompt-Tuning über mehrere Sessions: Analyse-Qualität getestet mit 
 - **Sprachwahlschalter auf der Ergebnis-Seite** — nicht nötig. Die Sprachauswahl auf dem Einstiegsbildschirm bestimmt bereits die Erklärungssprache. Ein zweiter Schalter würde nur einen erneuten kostenpflichtigen API-Call zum Neu-Übersetzen auslösen. Der Antwortbrief bleibt bewusst deutsch (Brief an deutsche Behörde).
 
 ### Erledigt
+
+- **Rate-Limiting (Stufe A)** ✓ — serverseitig in `/api/analyse` VOR dem Claude-Call. Per-IP 3/Tag + globales Tageslimit (Budget-Notbremse) via Upstash Redis. Rote Ampel zählt nicht gegen das IP-Kontingent (Erstattung). Fail-open ohne Upstash (Dev). Logik getestet (3 erlaubt, 4. blockiert, Rot erstattet). **Wichtig: Env-Variablen in Vercel setzen, sonst kein Schutz.**
 
 - **Sprachen erweitert** ✓ — 7 Sprachen: Deutsch, Türkisch, Arabisch, Ukrainisch, Russisch, Polnisch, Englisch
 

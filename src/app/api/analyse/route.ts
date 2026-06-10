@@ -6,6 +6,7 @@ const pdfParse = require('pdf-parse/lib/pdf-parse') as (buf: Buffer) => Promise<
 import { stripPII } from '@/lib/pii';
 import { erkenneDokumenttyp, classifyKeywords, formatVorklassifikation } from '@/lib/classifier';
 import { AnalyseSchema, verarbeiteFristen, istAntwortgenerierungErlaubt } from '@/lib/fristen';
+import { pruefeUndZaehle, erstatteRot, leseIp } from '@/lib/ratelimit';
 
 export const maxDuration = 60;
 
@@ -321,6 +322,16 @@ export async function POST(req: NextRequest) {
   let userMessageContent: Anthropic.MessageParam['content'];
   let textGekuerzt = false;
 
+  // Rate-Limit VOR dem teuren Claude-Call — blockierte Anfragen kosten kein Geld
+  const limit = await pruefeUndZaehle(leseIp(req.headers));
+  if (!limit.erlaubt) {
+    const fehler = limit.grund === 'global'
+      ? 'KlarAmt ist heute stark ausgelastet. Bitte versuche es morgen wieder.'
+      : 'Du hast deine kostenlosen Analysen für heute aufgebraucht. Bitte versuche es morgen wieder.';
+    return NextResponse.json({ fehler }, { status: 429 });
+  }
+  const ipKey = limit.ipKey;
+
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
@@ -406,6 +417,11 @@ ${textFuerAnalyse}
           console.error('Claude raw response (first 500 chars):', rawJson.slice(0, 500));
           send({ type: 'error', fehler: 'Die Analyse hat kein auswertbares Ergebnis geliefert. Bitte versuche es erneut.' });
           return;
+        }
+
+        // Rote Ampel zählt nicht gegen das IP-Kontingent
+        if (parsed.analyse.ampel.status === 'rot') {
+          await erstatteRot(ipKey);
         }
 
         const mitFristen = verarbeiteFristen(parsed);
