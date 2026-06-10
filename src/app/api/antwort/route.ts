@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+import { pruefeGlobalAntwort } from '@/lib/ratelimit';
 
 export const maxDuration = 30;
 
@@ -70,6 +71,11 @@ export async function POST(req: NextRequest) {
 
     if (!ERLAUBTE_TYPEN.has(antworttyp)) {
       return NextResponse.json({ fehler: 'Für diesen Antworttyp kann keine Vorlage erstellt werden.' }, { status: 400 });
+    }
+
+    // Globale Tages-Notbremse (Budgetschutz) vor dem Claude-Call
+    if (!(await pruefeGlobalAntwort())) {
+      return NextResponse.json({ fehler: 'KlarAmt ist heute stark ausgelastet. Bitte versuche es morgen wieder.' }, { status: 429 });
     }
 
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });

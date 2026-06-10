@@ -13,6 +13,7 @@ const redis =
 
 const IP_LIMIT = Number(process.env.RATE_LIMIT_IP || 3);
 const GLOBAL_LIMIT = Number(process.env.RATE_LIMIT_GLOBAL_DAY || 300);
+const ANTWORT_LIMIT = Number(process.env.RATE_LIMIT_ANTWORT_DAY || 500);
 const TTL_SEKUNDEN = 60 * 60 * 48; // Zähler nach 48h verfallen lassen
 
 function tagesKey(): string {
@@ -46,6 +47,21 @@ export async function pruefeUndZaehle(ip: string): Promise<LimitErgebnis> {
     // Redis-Ausfall darf die App nicht lahmlegen — fail-open, aber protokollieren
     console.error('Rate-Limit-Fehler (fail-open):', e);
     return { erlaubt: true, ipKey: null };
+  }
+}
+
+// Globale Tages-Notbremse für den Briefgenerator (eigener Zähler, billiger als Analysen).
+// Kein Per-IP-Limit — nur Schutz vor automatisiertem Massen-Missbrauch.
+export async function pruefeGlobalAntwort(): Promise<boolean> {
+  if (!redis) return true; // fail-open (Dev / nicht konfiguriert)
+  const key = `klaramt:antwort:${tagesKey()}`;
+  try {
+    const n = await redis.incr(key);
+    if (n === 1) await redis.expire(key, TTL_SEKUNDEN);
+    return n <= ANTWORT_LIMIT;
+  } catch (e) {
+    console.error('Rate-Limit (Antwort) Fehler (fail-open):', e);
+    return true;
   }
 }
 
