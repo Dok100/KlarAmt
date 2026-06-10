@@ -194,7 +194,13 @@ REGELN:
 
    PFLICHT: Wenn ein Guthaben/eine Erstattung existiert, MUSS sie als zahlungen-Eintrag (richtung "du_bekommst") UND als erster Satz der Zusammenfassung erscheinen. Sie darf nicht fehlen.
 
-   FOLGEJAHRE: Beträge aus der Zeile "[Jahr] und weitere Jahre" nehmen. Beispiel: 2026 = 360 ESt + 28 KiSt = 388 € — NICHT die laufenden 2025-Beträge (391) für 2026 übernehmen.
+   VORAUSZAHLUNGEN — die EINZIGE gültige Quelle ist die Tabelle "Als Vorauszahlungen werden festgesetzt und sind zu entrichten" mit den vier datierten Spalten (10. März / 10. Juni / 10. September / 10. Dezember). NUR die dort stehenden Spaltenbeträge sind echte Quartalszahlungen.
+   - Jede Jahres-Zeile einzeln lesen ("2025", "2026 und weitere Jahre"). Steht in einer Zeile 0,00 oder ist sie leer, gibt es für dieses Jahr KEINE Vorauszahlung — dann NICHTS für dieses Jahr ausgeben. NIEMALS Zahlungen erfinden, die in dieser Tabelle nicht mit einem Betrag > 0 stehen.
+   - Beispiel dieses Bescheidtyps: Zeile "2025" = 134 € (10.06./09./12.), Zeile "2026 und weitere Jahre" = 0,00 → für 2026 KEINE Einträge.
+   ANNUAL ≠ QUARTALSWEISE (der häufigste Fehler): Die Abschnitte "Berechnung der Jahresvorauszahlungen [Jahr]", "Jahresvorauszahlungsbetrag [Jahr]" und "Berechnung der Vorauszahlungen für [Jahr]" nennen JAHRESBETRÄGE (z.B. 402 € ESt + 32,16 € KiSt = 434,16 € pro JAHR). Das sind RECHENGRÖSSEN.
+   - NIEMALS einen Jahresbetrag auf vier Quartalstermine setzen — das vervierfacht ihn.
+   - NIEMALS einen Jahresbetrag als Quartalsbetrag verwenden.
+   - Der Quartalsbetrag kommt ausschließlich aus den datierten Spalten der Festsetzungstabelle, nie aus einem Jahresbetrag.
 
    VORAUSZAHLUNGSBETRAG pro Termin — zuverlässig bestimmen (Vision-Lesefehler vermeiden):
    - Wenn der Bescheid einen Gesamtbetrag pro Fälligkeit nennt ("Aufgrund des Mandats wird der Gesamtbetrag von 391,00 € ... eingezogen"), nutze GENAU diesen Betrag als Quartalsbetrag. NICHT selbst aus Einzelspalten zusammenrechnen — der genannte Gesamtbetrag ist der Anker.
