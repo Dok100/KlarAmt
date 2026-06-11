@@ -146,7 +146,12 @@ export default function Home() {
     setLaedt(true);
 
     const formData = new FormData();
-    formData.append('file', file);
+    const istText = file.type === 'text/plain' || /\.(txt|md)$/i.test(file.name);
+    if (istText) {
+      formData.append('text', await file.text());
+    } else {
+      formData.append('file', file);
+    }
     formData.append('sprache', sprache);
 
     try {
@@ -350,7 +355,7 @@ export default function Home() {
 
         <input ref={fotoRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={onFileChange} />
         <input ref={bildRef} type="file" accept="image/*" className="hidden" onChange={onFileChange} />
-        <input ref={pdfRef} type="file" accept="application/pdf" className="hidden" onChange={onFileChange} />
+        <input ref={pdfRef} type="file" accept="application/pdf,text/plain,.txt,.md" className="hidden" onChange={onFileChange} />
 
         {fehler && (
           <div style={{ marginTop: '1rem', padding: '0.875rem 1rem', background: '#f7ece8', border: '1px solid #e8c4b8', borderRadius: '10px', color: '#b53d1f', fontSize: '0.875rem', lineHeight: '1.55' }}>
