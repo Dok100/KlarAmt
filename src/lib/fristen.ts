@@ -61,11 +61,11 @@ export const AnalyseSchema = z.object({
       beratung_empfohlen: z.boolean().catch(false).default(false),
       begruendung: text,
       beratungsstellen: text,
-    }),
+    }).optional().default({ beratung_empfohlen: false, begruendung: '', beratungsstellen: '' }),
     ocr_qualitaet: z.object({
       confidence: enumMit(['hoch', 'mittel', 'niedrig'], 'mittel'),
       probleme: text,
-    }),
+    }).optional().default({ confidence: 'mittel', probleme: '' }),
     zahlungen: z.array(ZahlungSchema).optional().default([]),
   }),
 });
