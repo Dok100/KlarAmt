@@ -342,12 +342,16 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
     const sprache = (formData.get('sprache') as string) || 'Deutsch';
+    const textInput = (formData.get('text') as string | null)?.trim();
 
-    if (!file) {
+    if (textInput) {
+      // Rohtext-Eingabe (z.B. OCR-Ergebnis) testet den Analysezweig ohne Datei-Upload
+      extraktion = { modus: 'text', text: textInput };
+    } else if (!file) {
       return NextResponse.json({ fehler: 'Keine Datei übermittelt.' }, { status: 400 });
+    } else {
+      extraktion = await extrahiereInhalt(file);
     }
-
-    extraktion = await extrahiereInhalt(file);
 
     if (extraktion.modus === 'text') {
       const saubererText = stripPII(extraktion.text);
