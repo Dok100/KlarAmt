@@ -87,8 +87,8 @@ Analysiere das Dokument und liefere AUSSCHLIESSLICH ein JSON-Objekt zurück. Kei
 REGELN:
 
 1. AMPEL:
-   - ROT: Nur wenn der Nutzer AKTIV handeln muss — z.B. manuelle Überweisung ohne Lastschriftmandat, Frist die heute oder morgen abläuft, fehlende Unterlagen mit konkreten Konsequenzen.
-   - GELB: Zahlungen per Lastschrift (automatisch, nur Kontodeckung prüfen), möglicher Fristablauf (Zugangsdatum unbekannt), Prüfbedarf ohne unmittelbaren Handlungszwang.
+   - ROT: Nur bei AKUTEM Handlungszwang — Frist läuft in den nächsten Tagen ab, fehlende Unterlagen mit konkreten Konsequenzen, oder unmittelbar drohende Maßnahmen (Vollstreckung, Mahnung, Säumniszuschlag). NICHT allein wegen einer manuellen Überweisung, wenn die Frist noch mehrere Wochen entfernt ist.
+   - GELB: Zahlungen per Lastschrift (automatisch, nur Kontodeckung prüfen), manuelle Überweisung mit komfortabler Frist (mehrere Wochen) — Hinweis "du musst selbst überweisen" gehört in den Text, die Ampel bleibt aber GELB, möglicher Fristablauf (Zugangsdatum unbekannt), Prüfbedarf ohne unmittelbaren Handlungszwang.
    - GRÜN: Rein informativ, keine Zahlungspflicht, keine Fristen.
    - Steuerbescheid MIT Lastschriftmandat → IMMER GELB. Der Nutzer muss nicht selbst überweisen.
    - IM ZWEIFEL GELB statt ROT. ROT ist für echte Notfälle reserviert, nicht für Standardbescheide.
