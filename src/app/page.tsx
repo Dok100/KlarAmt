@@ -148,7 +148,14 @@ export default function Home() {
     const formData = new FormData();
     const istText = file.type === 'text/plain' || /\.(txt|md)$/i.test(file.name);
     if (istText) {
-      formData.append('text', await file.text());
+      const buffer = await file.arrayBuffer();
+      let inhalt: string;
+      try {
+        inhalt = new TextDecoder('utf-8', { fatal: true }).decode(buffer);
+      } catch {
+        inhalt = new TextDecoder('windows-1252').decode(buffer);
+      }
+      formData.append('text', inhalt);
     } else {
       formData.append('file', file);
     }
