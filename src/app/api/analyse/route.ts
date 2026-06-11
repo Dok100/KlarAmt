@@ -328,15 +328,22 @@ export async function POST(req: NextRequest) {
   let userMessageContent: Anthropic.MessageParam['content'];
   let textGekuerzt = false;
 
+  // Persönlicher Bypass: gültiges Cookie-Geheimnis hebt das Limit nur für den Inhaber auf
+  const bypassSecret = process.env.RATE_LIMIT_BYPASS;
+  const bypass = !!bypassSecret && req.cookies.get('klaramt_bypass')?.value === bypassSecret;
+
   // Rate-Limit VOR dem teuren Claude-Call — blockierte Anfragen kosten kein Geld
-  const limit = await pruefeUndZaehle(leseIp(req.headers));
-  if (!limit.erlaubt) {
-    const fehler = limit.grund === 'global'
-      ? 'KlarAmt ist heute stark ausgelastet. Bitte versuche es morgen wieder.'
-      : 'Du hast deine kostenlosen Analysen für heute aufgebraucht. Bitte versuche es morgen wieder.';
-    return NextResponse.json({ fehler }, { status: 429 });
+  let ipKey: string | null = null;
+  if (!bypass) {
+    const limit = await pruefeUndZaehle(leseIp(req.headers));
+    if (!limit.erlaubt) {
+      const fehler = limit.grund === 'global'
+        ? 'KlarAmt ist heute stark ausgelastet. Bitte versuche es morgen wieder.'
+        : 'Du hast deine kostenlosen Analysen für heute aufgebraucht. Bitte versuche es morgen wieder.';
+      return NextResponse.json({ fehler }, { status: 429 });
+    }
+    ipKey = limit.ipKey;
   }
-  const ipKey = limit.ipKey;
 
   try {
     const formData = await req.formData();

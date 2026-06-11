@@ -6,11 +6,17 @@ import { useRouter } from 'next/navigation';
 const SPRACHEN = ['Deutsch', 'Türkisch', 'Arabisch', 'Ukrainisch', 'Russisch', 'Polnisch', 'Englisch'];
 const KONTINGENT_KEY = 'klaramt_analysen';
 const CONSENT_KEY = 'klaramt_consent';
+const BYPASS_KEY = 'klaramt_bypass';
 const LIMIT = 3;
 
 function holeAnalysenZaehler(): number {
   if (typeof window === 'undefined') return 0;
   return parseInt(localStorage.getItem(KONTINGENT_KEY) || '0');
+}
+
+function hatBypass(): boolean {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem(BYPASS_KEY) === '1';
 }
 
 function zaehleAnalyse(ampelStatus: string) {
@@ -130,8 +136,14 @@ export default function Home() {
   const [phase, setPhase] = useState<'lesen' | 'analyse'>('lesen');
 
   useEffect(() => {
+    const frei = new URLSearchParams(window.location.search).get('frei');
+    if (frei) {
+      document.cookie = `klaramt_bypass=${encodeURIComponent(frei)}; path=/; max-age=31536000; SameSite=Lax`;
+      localStorage.setItem(BYPASS_KEY, '1');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
     setConsentGegeben(hatConsent());
-    setKontingentErschoepft(holeAnalysenZaehler() >= LIMIT);
+    setKontingentErschoepft(!hatBypass() && holeAnalysenZaehler() >= LIMIT);
     setIstMobil(navigator.maxTouchPoints > 0);
   }, []);
 
@@ -214,7 +226,7 @@ export default function Home() {
       const data = ergebnis as { analyse?: { analyse?: { ampel?: { status?: string } } } };
       const ampelStatus = data.analyse?.analyse?.ampel?.status ?? '';
       zaehleAnalyse(ampelStatus);
-      setKontingentErschoepft(holeAnalysenZaehler() >= LIMIT);
+      setKontingentErschoepft(!hatBypass() && holeAnalysenZaehler() >= LIMIT);
 
       sessionStorage.setItem('klaramt_ergebnis', JSON.stringify(ergebnis));
       router.push('/ergebnis');
