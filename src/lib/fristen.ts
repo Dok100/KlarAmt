@@ -121,7 +121,10 @@ const BEKANNTGABE_FIKTION: Record<string, number> = {
   widerspruch: 3,
   klage: 0,
   einspruch_bussgeld: 0,
-  zahlung: 0,
+  // Relative Zahlungsfristen ("einen Monat nach Bekanntgabe") laufen ebenfalls ab
+  // Bekanntgabe — also mit Zugangsfiktion. Feste Zahltermine haben frist_tage=null
+  // und werden hiervon nicht berührt.
+  zahlung: 3,
 };
 
 export function verarbeiteFristen(analyse: Analyse): Analyse & { berechnete_fristen: (FristErgebnis | null)[] } {
