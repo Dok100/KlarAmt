@@ -136,6 +136,41 @@ export function verarbeiteFristen(analyse: Analyse): Analyse & { berechnete_fris
   return { ...analyse, berechnete_fristen };
 }
 
+// Architektonische Leitplanke gegen erfundene Gesetzeszitate: das gefährlichste
+// Fehlermuster bei rechtsnahen Texten, weil falsche §§ Autorität vortäuschen.
+// Behalte nur §§/Aktenzeichen, die WÖRTLICH im Bescheidtext stehen. Greift nur im
+// Text-Modus — bei Scans (Vision) liegt kein verlässlicher Quelltext vor.
+function istParagraphZitat(text: string): boolean {
+  return /§|nr\.\s*\d/i.test(text);
+}
+
+function zitatImText(zitat: string, textLower: string): boolean {
+  const gesetz = zitat.match(/([a-zäöü]{2,})\s*$/i);
+  if (!gesetz) return false;
+  if (!new RegExp(`\\b${gesetz[1].toLowerCase()}\\b`).test(textLower)) return false;
+  const nummer = zitat.match(/(?:§|nr\.?)\s*(\d+)/i);
+  if (!nummer) return true;
+  return new RegExp(`(?:§|nr\\.?)\\s*${nummer[1]}(?!\\d)`, 'i').test(textLower);
+}
+
+export function entferneErfundeneParagraphen(analyse: Analyse, quelltext: string | null): Analyse {
+  if (!quelltext) return analyse;
+  const textLower = quelltext.toLowerCase();
+
+  analyse.analyse.erklaerung.rechtsgrundlagen = analyse.analyse.erklaerung.rechtsgrundlagen.filter(
+    (rg) => !istParagraphZitat(rg.paragraph) || zitatImText(rg.paragraph, textLower),
+  );
+
+  for (const frist of analyse.analyse.fristen) {
+    const rgf = frist.rechtsgrundlage_frist;
+    if (rgf && istParagraphZitat(rgf) && !zitatImText(rgf, textLower)) {
+      frist.rechtsgrundlage_frist = '';
+    }
+  }
+
+  return analyse;
+}
+
 export function istAntwortgenerierungErlaubt(analyse: Analyse): { erlaubt: boolean; grund?: string; beratungsstellen?: string; } {
   if (analyse.analyse.risikokategorie === 'hoch') {
     return {

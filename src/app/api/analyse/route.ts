@@ -5,7 +5,7 @@ import Anthropic from '@anthropic-ai/sdk';
 const pdfParse = require('pdf-parse/lib/pdf-parse') as (buf: Buffer) => Promise<{ text: string }>;
 import { stripPII } from '@/lib/pii';
 import { erkenneDokumenttyp, classifyKeywords, formatVorklassifikation } from '@/lib/classifier';
-import { AnalyseSchema, verarbeiteFristen, istAntwortgenerierungErlaubt } from '@/lib/fristen';
+import { AnalyseSchema, verarbeiteFristen, istAntwortgenerierungErlaubt, entferneErfundeneParagraphen } from '@/lib/fristen';
 import { pruefeUndZaehle, erstatteRot, leseIp } from '@/lib/ratelimit';
 
 export const maxDuration = 60;
@@ -39,7 +39,7 @@ Analysiere das Dokument und liefere AUSSCHLIESSLICH ein JSON-Objekt zurück. Kei
       "bedeutung_fuer_dich": "2-3 Sätze. Finanzielle/praktische Konsequenz.",
       "rechtsgrundlagen": [
         {
-          "paragraph": "z.B. '§ 173 AO'",
+          "paragraph": "NUR wenn der § wörtlich im Dokument steht (z.B. '§ 173 AO'), sonst leer lassen",
           "erklaerung": "1 Satz, einfach."
         }
       ]
@@ -50,8 +50,8 @@ Analysiere das Dokument und liefere AUSSCHLIESSLICH ein JSON-Objekt zurück. Kei
         "beschreibung": "Was kann bis wann getan werden?",
         "frist_tage": 30,
         "frist_berechnung": "Erläuterung",
-        "bescheid_datum": "YYYY-MM-DD oder null",
-        "rechtsgrundlage_frist": "z.B. '§ 122 Abs. 2 AO'"
+        "bescheid_datum": "Echtes Bescheid-/Zustelldatum als YYYY-MM-DD — NIEMALS Tatdatum/Zeitraum. Kein Datum erkennbar → null",
+        "rechtsgrundlage_frist": "NUR wenn der § wörtlich im Dokument steht, sonst leer"
       }
     ],
     "handlungshinweise": [
@@ -85,6 +85,13 @@ Analysiere das Dokument und liefere AUSSCHLIESSLICH ein JSON-Objekt zurück. Kei
 }
 
 REGELN:
+
+0. PARAGRAPHEN — STRIKTE QUELLENBINDUNG (höchste Priorität, gefährlichste Fehlerklasse):
+   - In "rechtsgrundlagen" und "rechtsgrundlage_frist" NUR §§/Aktenzeichen aufnehmen, die WÖRTLICH im Dokumenttext stehen.
+   - Nennt das Dokument KEINEN Paragraphen, erfinde KEINEN. Auch keinen, der "üblicherweise" passt. Lieber gar keine Angabe als eine falsche Ziffer.
+   - Ein falscher § ist schädlicher als ein fehlender — er täuscht dem Laien Autorität vor. Ehrliche Lücke schlägt falsches Alles-klar.
+   - Statt eines erfundenen § ist eine allgemeine Einordnung ohne Ziffer erlaubt (paragraph leer, erklaerung z.B. "Das betrifft das Rundfunkbeitragsrecht.").
+   - Die §§ in den folgenden Regeln (z.B. zu Fristen) helfen DIR nur bei der Einordnung (Einspruch vs. Widerspruch, Fristlänge). Sie sind KEINE Erlaubnis, einen § zu zitieren, der nicht im Dokument steht.
 
 1. AMPEL:
    - ROT: Nur bei AKUTEM Handlungszwang — Frist läuft in den nächsten Tagen ab, fehlende Unterlagen mit konkreten Konsequenzen, oder unmittelbar drohende Maßnahmen (Vollstreckung, Mahnung, Säumniszuschlag). NICHT allein wegen einer manuellen Überweisung, wenn die Frist noch mehrere Wochen entfernt ist.
@@ -227,6 +234,8 @@ REGELN:
    - Nullbeträge (0 Euro) NICHT erwähnen — nur Beträge > 0 nennen.
 
 9. FRISTDARSTELLUNG (Vorsicht — Fehler hier haben rechtliche Konsequenzen):
+   - bescheid_datum NUR aus einem echten Bescheid-/Zustelldatum. NIEMALS das Tatdatum, den Tattag, einen Leistungs- oder Abrechnungszeitraum als Bescheiddatum verwenden. Beispiel Bußgeld: "am 12.05. ... begangen" ist das TATDATUM, nicht das Bescheiddatum.
+   - Ist KEIN Bescheiddatum erkennbar: bescheid_datum = null setzen und KEINE Frist schätzen. In frist_berechnung die Lücke benennen ("Kein Bescheiddatum im Dokument erkennbar — das Fristende kann nicht berechnet werden. Bitte das Zustelldatum auf dem Original prüfen."). Lieber eine offene Lücke als ein erfundenes Fristende (das fälschlich abgelaufen wirken kann).
    - Bekanntgabefiktion: Bescheid gilt 3 Tage nach Aufgabe als zugegangen (§ 122 Abs. 2 AO) — nicht am Druckdatum.
    - Das tatsächliche Zugangsdatum ist unbekannt. Fristen können nur geschätzt werden.
    - ampel.begruendung bei möglichem Fristablauf: NIEMALS kategorisch behaupten, die Frist sei abgelaufen. Stattdessen: "Das Bescheiddatum ist [Datum]. Die Einspruchsfrist beträgt einen Monat ab Bekanntgabe. Bitte prüfe das genaue Zugangsdatum."
@@ -327,6 +336,7 @@ export async function POST(req: NextRequest) {
   let extraktion: Extraktion;
   let userMessageContent: Anthropic.MessageParam['content'];
   let textGekuerzt = false;
+  let quelltext: string | null = null;
 
   // Persönlicher Bypass: gültiges Cookie-Geheimnis hebt das Limit nur für den Inhaber auf
   const bypassSecret = process.env.RATE_LIMIT_BYPASS;
@@ -362,6 +372,7 @@ export async function POST(req: NextRequest) {
 
     if (extraktion.modus === 'text') {
       const saubererText = stripPII(extraktion.text);
+      quelltext = saubererText;
       const dokumenttyp = erkenneDokumenttyp(saubererText);
       const keywords = classifyKeywords(saubererText);
       const vorklassifikation = formatVorklassifikation(dokumenttyp, keywords);
@@ -440,6 +451,8 @@ ${textFuerAnalyse}
         if (parsed.analyse.ampel.status === 'rot') {
           await erstatteRot(ipKey);
         }
+
+        parsed = entferneErfundeneParagraphen(parsed, quelltext);
 
         const mitFristen = verarbeiteFristen(parsed);
         const antwortGate = istAntwortgenerierungErlaubt(parsed);
