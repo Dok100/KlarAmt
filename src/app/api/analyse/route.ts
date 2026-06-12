@@ -5,7 +5,7 @@ import Anthropic from '@anthropic-ai/sdk';
 const pdfParse = require('pdf-parse/lib/pdf-parse') as (buf: Buffer) => Promise<{ text: string }>;
 import { stripPII } from '@/lib/pii';
 import { erkenneDokumenttyp, classifyKeywords, formatVorklassifikation } from '@/lib/classifier';
-import { AnalyseSchema, verarbeiteFristen, istAntwortgenerierungErlaubt, entferneErfundeneParagraphen } from '@/lib/fristen';
+import { AnalyseSchema, verarbeiteFristen, istAntwortgenerierungErlaubt, entferneErfundeneParagraphen, pruefeBetragssumme } from '@/lib/fristen';
 import { pruefeUndZaehle, erstatteRot, leseIp } from '@/lib/ratelimit';
 
 export const maxDuration = 60;
@@ -80,7 +80,15 @@ Analysiere das Dokument und liefere AUSSCHLIESSLICH ein JSON-Objekt zurück. Kei
         "empfaenger": "Bei du_zahlst: an wen, z.B. 'EnBW'. Bei du_bekommst: woher, z.B. 'von EnBW auf dein Konto'.",
         "hinweis": "Optional: z.B. 'erhöht wegen Schulbedarf' oder leer lassen"
       }
-    ]
+    ],
+    "betragspruefung": {
+      "gesamtbetrag": 388.50,
+      "einzelposten": [
+        { "bezeichnung": "Geldbuße", "betrag": 360.00 },
+        { "bezeichnung": "Gebühr", "betrag": 25.00 },
+        { "bezeichnung": "Auslagen", "betrag": 3.50 }
+      ]
+    }
   }
 }
 
@@ -136,7 +144,7 @@ REGELN:
    BUSSGELDBESCHEID — BETRAGSREGEL (kritisch, Vertrauensbruch vermeiden):
    - Gesamtbetrag IMMER direkt aus dem Dokument übernehmen — NIE selbst berechnen.
    - Wenn der Bescheid "Gesamt: 388,50 €" ausweist, dann ist 388,50 € der Gesamtbetrag — egal was die Einzelpositionen ergeben.
-   - Einzelpositionen separat nennen: "380,00 € Geldbuße + 25,00 € Gebühr + 3,50 € Auslagen = 388,50 € Gesamt"
+   - Einzelpositionen separat nennen: "360,00 € Geldbuße + 25,00 € Gebühr + 3,50 € Auslagen = 388,50 € Gesamt"
    - Wenn Summe der Einzelpositionen ≠ ausgewiesener Gesamtbetrag: Abweichung explizit erwähnen ("Bitte prüfe die Beträge am Original — OCR-Fehler möglich")
    - Sprachlich: "Du bist X km/h zu schnell gefahren" — NICHT "Du wurdest zu schnell gefahren" (grammatisch falsch)
 
@@ -287,7 +295,13 @@ REGELN:
     - § 11 SGB II: Anrechnung von Einkommen auf den Bedarf
     - § 7 SGB II NICHT mit § 19/20 verwechseln — § 7 ist die Zugangsnorm, § 19/20 sind die Leistungsnormen
 
-    RUNDFUNKBEITRAGSBEFREIUNG: Wenn der Bescheid eine Bescheinigung für ARD/ZDF/Deutschlandradio enthält, als separaten Handlungshinweis aufnehmen: "Dem Bescheid liegt eine Bescheinigung bei, mit der du dich beim Beitragsservice von ARD, ZDF und Deutschlandradio von der Rundfunkbeitragspflicht befreien lassen kannst. Sende sie mit deiner Beitragsnummer an: Beitragsservice, 50656 Köln."`;
+    RUNDFUNKBEITRAGSBEFREIUNG: Wenn der Bescheid eine Bescheinigung für ARD/ZDF/Deutschlandradio enthält, als separaten Handlungshinweis aufnehmen: "Dem Bescheid liegt eine Bescheinigung bei, mit der du dich beim Beitragsservice von ARD, ZDF und Deutschlandradio von der Rundfunkbeitragspflicht befreien lassen kannst. Sende sie mit deiner Beitragsnummer an: Beitragsservice, 50656 Köln."
+
+11. BETRAGSPRÜFUNG (deterministischer Summen-Abgleich, Pflichtfeld "betragspruefung"):
+   - NUR ausfüllen, wenn das Dokument einen Gesamtbetrag ausweist, der sich aus benannten Einzelposten zusammensetzt. Typische Fälle: Bußgeldbescheid (Geldbuße + Gebühr + Auslagen = Gesamt), Steuer-Quartalsbetrag (Einkommensteuer + Kirchensteuer + Soli = Gesamt pro Termin).
+   - gesamtbetrag und JEDER einzelposten.betrag werden WÖRTLICH aus dem Dokument übernommen — NIEMALS selbst gerechnet, geschätzt oder gerundet. Der Code prüft anschließend, ob die Einzelposten den Gesamtbetrag ergeben; nur transkribierte (nicht berechnete) Zahlen decken Lesefehler auf.
+   - Gibt es keinen aus Einzelposten zusammengesetzten Gesamtbetrag: gesamtbetrag = null und einzelposten = []. Im Zweifel leer lassen — lieber keine Prüfung als eine erfundene.
+   - Beträge als Zahl (z.B. 388.50), ohne "Euro", ohne Tausenderpunkt.`;
 
 type VisionBlock =
   | { type: 'document'; source: { type: 'base64'; media_type: 'application/pdf'; data: string } }
@@ -453,6 +467,7 @@ ${textFuerAnalyse}
         }
 
         parsed = entferneErfundeneParagraphen(parsed, quelltext);
+        parsed = pruefeBetragssumme(parsed);
 
         const mitFristen = verarbeiteFristen(parsed);
         const antwortGate = istAntwortgenerierungErlaubt(parsed);

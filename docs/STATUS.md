@@ -29,7 +29,6 @@ Intensives Prompt-Tuning über mehrere Sessions: Analyse-Qualität getestet mit 
 
 ## Bekannte offene Punkte
 
-- **Summen-Prüfung (Leitplanke 3) noch nicht gebaut** — deterministisch prüfen, ob Einzelposten = Gesamtbetrag; bei Abweichung Confidence runter/Hinweis. Nächster Schritt.
 - **§-Filter wirkt nur im Text-Modus** — bei Scans/Fotos (Vision) kein Quelltext zum Abgleich, nur Prompt-Regel schützt. Größerer Umbau nötig (gelesenen Text zurückgeben).
 - **Datums-Backstop** — Prompt drängt gegen Tatdatum-als-Bescheiddatum, aber Haiku schwankt (Bußgeld-Zahlungsfrist nahm in einem Lauf das Tatdatum). Deterministischer Backstop offen.
 - Haiku lässt gelegentlich `fristen`-Array ganz weg (kein Crash dank Schema-Default, aber Countdown fehlt dann).
@@ -41,8 +40,9 @@ Intensives Prompt-Tuning über mehrere Sessions: Analyse-Qualität getestet mit 
 
 ## Was als nächstes kommt
 
-1. **Summen-Prüfung** (Leitplanke 3) — deterministischer Abgleich Einzelposten vs. Gesamtbetrag
-2. **Launch-Vorbereitung**: Debug-Logs entfernen, Domain klaramt.app, Anthropic DPA
+1. **Datums-Backstop** (Bußgeld-Tatdatum) — deterministisch verhindern, dass Haiku das Tatdatum als Bescheiddatum nimmt
+2. **§-Filter für Scans/Fotos** — gelesenen Vision-Text zurückgeben, damit die Paragraphen-Leitplanke auch im Vision-Modus greift (größerer Umbau)
+3. **Launch-Vorbereitung**: Debug-Logs entfernen, Domain klaramt.app, Anthropic DPA
 
 ### Verworfen
 
@@ -50,6 +50,7 @@ Intensives Prompt-Tuning über mehrere Sessions: Analyse-Qualität getestet mit 
 
 ### Erledigt
 
+- **Summen-Prüfung (Leitplanke 3)** ✓ (2026-06-12) — neues Prompt-Feld `betragspruefung` (ausgewiesener Gesamtbetrag + wörtlich transkribierte Einzelposten). `pruefeBetragssumme()` in `lib/fristen.ts` vergleicht deterministisch: ergeben die Einzelposten nicht den Gesamtbetrag (>1 Cent Abweichung), wird `ocr_qualitaet.confidence` gesenkt und ein Hinweis in `probleme` angehängt — die bestehende OCR-Warnbox zeigt ihn. Funktioniert in Text- UND Vision-Modus (Selbstkonsistenz-Check der LLM-Transkription). Nebenbei: arithmetisch falsches Bußgeld-Beispiel im Prompt korrigiert (Geldbuße 380→360, damit 360+25+3,50=388,50 aufgeht). **Noch auf Haiku gegenzuprüfen, ob das Feld zuverlässig befüllt wird.**
 - **Paragraphen-Leitplanke** ✓ (2026-06-12) — `entferneErfundeneParagraphen()` verwirft im Text-Modus jedes §/Aktenzeichen, das nicht wörtlich im Bescheidtext steht (gefährlichste Fehlerklasse, von größeren Modellen NICHT lösbar). Prompt: strikte Quellenbindung. Auf Haiku an 5 Bescheiden geprüft: echte §§ behalten, erfundene (§ 4 RStV, § 70 EStG, falsch gelabelter § 122 AO) entfernt.
 - **Datums-Regel** ✓ (2026-06-12) — bescheid_datum nur aus echtem Bescheiddatum, niemals Tatdatum/Zeitraum; kein Datum → null statt erfundenem Fristende (Prompt-seitig).
 - **Schema-Robustheit** ✓ (2026-06-12) — `eskalation` und `ocr_qualitaet` bekamen Defaults; Haiku ließ sie weg → vorher ZodError-Crash (Nutzer sah Fehler statt Ergebnis).
