@@ -301,6 +301,9 @@ function Antwortgenerator({ a }: { a: AnalyseInhalt }) {
   useEffect(() => {
     try {
       const r = localStorage.getItem(ABSENDER_KEY);
+      // localStorage existiert beim SSR-Vorrender nicht; Lesen im useState-Initializer
+      // wuerde Server-Default und Client-Wert auseinanderlaufen lassen (Hydration-Mismatch).
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (r) setAbsender(JSON.parse(r));
     } catch {
       // ungültiger localStorage-Inhalt wird ignoriert
@@ -612,6 +615,9 @@ export default function ErgebnisSeite() {
   useEffect(() => {
     const raw = sessionStorage.getItem('klaramt_ergebnis');
     if (!raw) { router.push('/'); return; }
+    // sessionStorage existiert beim SSR-Vorrender nicht; erst null rendern, dann
+    // clientseitig nachladen vermeidet einen Hydration-Mismatch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDaten(JSON.parse(raw));
   }, [router]);
 
