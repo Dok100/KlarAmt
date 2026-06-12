@@ -164,12 +164,21 @@ function extrahiereBetrag(beschreibung: string): string | null {
   return m ? m[1] + ' €' : null;
 }
 
-function FristCountdown({ frist }: { frist: FristErgebnis }) {
+function fristTitel(typ: string): string {
+  if (typ === 'widerspruch') return 'Widerspruchsfrist';
+  if (typ === 'klage') return 'Klagefrist';
+  if (typ === 'stellungnahme') return 'Stellungnahmefrist';
+  if (typ === 'nachreichung') return 'Nachreichungsfrist';
+  if (typ.startsWith('einspruch')) return 'Einspruchsfrist';
+  return 'Frist';
+}
+
+function FristCountdown({ frist, titel }: { frist: FristErgebnis; titel: string }) {
   if (frist.abgelaufen) {
     return (
       <div style={{ background: '#fdf4e0', border: '1px solid #e0c878', borderRadius: '9px', padding: '0.6875rem 0.875rem' }}>
         <p style={{ fontSize: '0.875rem', color: '#92660f', fontWeight: 600, lineHeight: 1.4 }}>
-          Einspruchsfrist prüfen — geschätztes Fristende: {formatDatum(frist.fristende)}
+          {titel} prüfen — geschätztes Fristende: {formatDatum(frist.fristende)}
         </p>
         <p style={{ fontSize: '0.75rem', color: '#92660f', marginTop: '0.25rem', opacity: 0.85, lineHeight: 1.5 }}>
           Maßgeblich ist, wann dir der Bescheid bekanntgegeben wurde — nicht das Druckdatum. Bitte prüfe das tatsächliche Zugangsdatum.
@@ -189,6 +198,20 @@ function FristCountdown({ frist }: { frist: FristErgebnis }) {
       <span style={{ fontWeight: 700, fontSize: '1.25rem', letterSpacing: '-0.02em' }}>{frist.verbleibende_tage}</span>
       <span style={{ fontSize: '0.875rem', marginLeft: '0.375rem' }}>Tage bis zum geschätzten Fristende ({frist.fristende})</span>
       <p style={{ fontSize: '0.75rem', marginTop: '0.25rem', opacity: 0.65, lineHeight: 1.5 }}>{frist.hinweis}</p>
+    </div>
+  );
+}
+
+function FristHinweis({ titel, tage }: { titel: string; tage: number | null }) {
+  const dauer = tage ? `${tage} Tage` : 'die gesetzliche Frist';
+  return (
+    <div style={{ background: '#fdf4e0', border: '1px solid #e0c878', borderRadius: '9px', padding: '0.6875rem 0.875rem' }}>
+      <p style={{ fontSize: '0.875rem', color: '#92660f', fontWeight: 600, lineHeight: 1.4 }}>
+        {titel} läuft {dauer} ab Zustellung
+      </p>
+      <p style={{ fontSize: '0.75rem', color: '#92660f', marginTop: '0.25rem', opacity: 0.85, lineHeight: 1.5 }}>
+        Im Bescheid ist kein eindeutiges Bescheiddatum erkennbar — ein Fristende lässt sich nicht berechnen. Bitte prüfe das Zustelldatum auf deinem Original.
+      </p>
     </div>
   );
 }
@@ -604,9 +627,11 @@ export default function ErgebnisSeite() {
   const a = daten.analyse.analyse;
   const ampel = AMPEL_CONFIG[a.ampel.status];
 
-  const fristenMitCountdown = a.fristen
+  // Rechtsbehelfsfristen als Box anzeigen (Countdown bei bekanntem Datum, sonst Hinweis).
+  // zahlung-Fristen gehoeren in die Zahlungstabelle, nicht zusaetzlich als Frist-Box.
+  const fristBoxen = a.fristen
     .map((f, i) => ({ frist: f, berechnet: daten.analyse.berechnete_fristen[i] }))
-    .filter(({ berechnet }) => berechnet !== null);
+    .filter(({ frist }) => frist.typ !== 'zahlung' && frist.frist_tage !== null);
 
   return (
     <main style={{ minHeight: '100svh', background: '#f3ede1', paddingBottom: '3.5rem' }}>
@@ -656,12 +681,14 @@ export default function ErgebnisSeite() {
         </div>
 
         {/* Frist-Countdowns */}
-        {fristenMitCountdown.length > 0 && (
+        {fristBoxen.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4375rem' }}>
-            {fristenMitCountdown.map(({ frist, berechnet }, i) => (
+            {fristBoxen.map(({ frist, berechnet }, i) => (
               <div key={i}>
                 <p style={{ fontSize: '0.8125rem', color: '#5e564d', marginBottom: '0.3rem', paddingLeft: '0.125rem', lineHeight: 1.5 }}>{frist.beschreibung}</p>
-                <FristCountdown frist={berechnet!} />
+                {berechnet
+                  ? <FristCountdown frist={berechnet} titel={fristTitel(frist.typ)} />
+                  : <FristHinweis titel={fristTitel(frist.typ)} tage={frist.frist_tage} />}
               </div>
             ))}
           </div>

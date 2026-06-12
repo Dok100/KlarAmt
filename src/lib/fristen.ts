@@ -186,6 +186,44 @@ export function entferneErfundeneParagraphen(analyse: Analyse, quelltext: string
   return analyse;
 }
 
+// Deterministische Leitplanke gegen das Tatdatum als Bescheiddatum: Haiku nimmt bei
+// Bußgeldbescheiden gelegentlich den Tattag ("am 12.05. ... begangen") als bescheid_datum
+// und rechnet daraus ein konkretes — aber falsches — Fristende. Ein zu früh berechnetes
+// Fristende wirkt abgelaufen und ist die rechtlich gefährlichste Fehlerklasse. Erkennt
+// das Tatdatum am Kontext im Quelltext; ist bescheid_datum genau dieses Datum, wird es
+// verworfen (frist_tage bleibt, der Hinweis nennt weiter die Fristlänge). Nur im
+// Text-Modus — bei Scans (Vision) liegt kein Quelltext vor.
+const DATUM = String.raw`(\d{1,2})\.(\d{1,2})\.(\d{4})`;
+const TAT_MUSTER = [
+  new RegExp(String.raw`am\s+${DATUM}\s+um\s+\d{1,2}[:.]\d{2}\s*uhr`, 'gi'),
+  new RegExp(String.raw`(?:zur\s+last\s+gelegt|vorgeworfen|begangen|tattag|tatzeit|tatzeitpunkt)[^.]{0,60}?${DATUM}`, 'gi'),
+  new RegExp(String.raw`${DATUM}[^.]{0,60}?(?:begangen|zur\s+last\s+gelegt|vorgeworfen)`, 'gi'),
+];
+
+function findeTatdaten(textLower: string): Set<string> {
+  const treffer = new Set<string>();
+  for (const muster of TAT_MUSTER) {
+    for (const m of textLower.matchAll(muster)) {
+      treffer.add(`${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`);
+    }
+  }
+  return treffer;
+}
+
+export function verwerfeTatdatumAlsBescheiddatum(analyse: Analyse, quelltext: string | null): Analyse {
+  if (!quelltext) return analyse;
+  const tatdaten = findeTatdaten(quelltext.toLowerCase());
+  if (tatdaten.size === 0) return analyse;
+
+  for (const frist of analyse.analyse.fristen) {
+    if (frist.bescheid_datum && tatdaten.has(frist.bescheid_datum.slice(0, 10))) {
+      frist.bescheid_datum = null;
+    }
+  }
+
+  return analyse;
+}
+
 // Deterministische Leitplanke gegen Lesefehler bei Beträgen: ergeben die wörtlich
 // transkribierten Einzelposten NICHT den ausgewiesenen Gesamtbetrag, ist mindestens
 // eine Zahl falsch erkannt. Der Befund landet in betragspruefung.warnung (eigene,

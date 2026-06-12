@@ -5,7 +5,7 @@ import Anthropic from '@anthropic-ai/sdk';
 const pdfParse = require('pdf-parse/lib/pdf-parse') as (buf: Buffer) => Promise<{ text: string }>;
 import { stripPII } from '@/lib/pii';
 import { erkenneDokumenttyp, classifyKeywords, formatVorklassifikation } from '@/lib/classifier';
-import { AnalyseSchema, verarbeiteFristen, istAntwortgenerierungErlaubt, entferneErfundeneParagraphen, pruefeBetragssumme } from '@/lib/fristen';
+import { AnalyseSchema, verarbeiteFristen, istAntwortgenerierungErlaubt, entferneErfundeneParagraphen, pruefeBetragssumme, verwerfeTatdatumAlsBescheiddatum } from '@/lib/fristen';
 import { pruefeUndZaehle, erstatteRot, leseIp } from '@/lib/ratelimit';
 
 export const maxDuration = 60;
@@ -467,6 +467,7 @@ ${textFuerAnalyse}
         }
 
         parsed = entferneErfundeneParagraphen(parsed, quelltext);
+        parsed = verwerfeTatdatumAlsBescheiddatum(parsed, quelltext);
         parsed = pruefeBetragssumme(parsed);
 
         const mitFristen = verarbeiteFristen(parsed);
