@@ -28,6 +28,8 @@ const betragspruefung = z.object({
     bezeichnung: text,
     betrag: z.number().catch(0).default(0),
   })).optional().default([]),
+  // Vom Code (pruefeBetragssumme) gesetzt, nicht vom Modell — der deterministische Befund
+  warnung: text.optional(),
 }).nullish().transform((v) => v ?? { gesamtbetrag: null, einzelposten: [] });
 
 // Zod-Schema für die Claude-Antwort
@@ -186,27 +188,23 @@ export function entferneErfundeneParagraphen(analyse: Analyse, quelltext: string
 
 // Deterministische Leitplanke gegen Lesefehler bei Beträgen: ergeben die wörtlich
 // transkribierten Einzelposten NICHT den ausgewiesenen Gesamtbetrag, ist mindestens
-// eine Zahl falsch erkannt. Statt dem Laien einen stimmigen, aber falschen Betrag zu
-// zeigen, senken wir die Confidence und weisen auf die Abweichung hin (Prompt allein
-// reicht nicht — Haiku übernimmt die Selbstkontrolle nicht zuverlässig).
+// eine Zahl falsch erkannt. Der Befund landet in betragspruefung.warnung (eigene,
+// prominente Box bei der Zahlungstabelle) — bewusst NICHT in ocr_qualitaet, denn eine
+// nicht aufgehende Summe ist keine Texterkennungs-Frage und stünde dort falsch benannt
+// und zu unscheinbar am Seitenende.
 function formatEuro(betrag: number): string {
   return betrag.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 export function pruefeBetragssumme(analyse: Analyse): Analyse {
-  const { gesamtbetrag, einzelposten } = analyse.analyse.betragspruefung;
-  if (gesamtbetrag === null || einzelposten.length < 2) return analyse;
+  const bp = analyse.analyse.betragspruefung;
+  if (bp.gesamtbetrag === null || bp.einzelposten.length < 2) return analyse;
 
-  const summe = einzelposten.reduce((s, posten) => s + posten.betrag, 0);
+  const summe = bp.einzelposten.reduce((s, posten) => s + posten.betrag, 0);
   // 1 Cent Toleranz fängt Gleitkomma-Rauschen ab; echte Lesefehler sind deutlich größer
-  if (Math.abs(summe - gesamtbetrag) <= 0.01) return analyse;
+  if (Math.abs(summe - bp.gesamtbetrag) <= 0.01) return analyse;
 
-  const hinweis = `Die Einzelbeträge ergeben zusammen ${formatEuro(summe)} €, der Bescheid weist aber ${formatEuro(gesamtbetrag)} € als Gesamtbetrag aus. Bitte prüfe die Beträge am Original — ein Lesefehler ist möglich.`;
-
-  const ocr = analyse.analyse.ocr_qualitaet;
-  if (ocr.confidence === 'hoch') ocr.confidence = 'mittel';
-  ocr.probleme = [ocr.probleme, hinweis].filter(Boolean).join(' ');
-
+  bp.warnung = `Die Einzelbeträge ergeben zusammen ${formatEuro(summe)} €, der Bescheid nennt aber ${formatEuro(bp.gesamtbetrag)} € als Gesamtbetrag. Bitte prüfe die Beträge am Original — ein Lesefehler ist möglich.`;
   return analyse;
 }
 

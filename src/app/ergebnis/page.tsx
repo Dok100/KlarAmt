@@ -34,6 +34,7 @@ interface ErgebnisData {
       eskalation: { beratung_empfohlen: boolean; begruendung: string; beratungsstellen: string };
       ocr_qualitaet: { confidence: string; probleme: string };
       zahlungen?: Zahlung[];
+      betragspruefung?: { warnung?: string };
     };
     berechnete_fristen: (FristErgebnis | null)[];
   };
@@ -659,10 +660,18 @@ export default function ErgebnisSeite() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4375rem' }}>
             {fristenMitCountdown.map(({ frist, berechnet }, i) => (
               <div key={i}>
-                <p style={{ fontSize: '0.75rem', color: '#9c9087', marginBottom: '0.25rem', paddingLeft: '0.125rem' }}>{frist.beschreibung}</p>
+                <p style={{ fontSize: '0.8125rem', color: '#5e564d', marginBottom: '0.3rem', paddingLeft: '0.125rem', lineHeight: 1.5 }}>{frist.beschreibung}</p>
                 <FristCountdown frist={berechnet!} />
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Summen-Warnung: prominent ueber der Zahlungstabelle, damit der unstimmige Betrag nicht ungeprueft wirkt */}
+        {a.betragspruefung?.warnung && (
+          <div style={{ background: '#fdf4e0', border: '1px solid #e0c878', borderRadius: '10px', padding: '0.75rem 1rem' }}>
+            <p style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#92660f', marginBottom: '0.2rem' }}>Beträge prüfen</p>
+            <p style={{ fontSize: '0.8125rem', color: '#92660f', lineHeight: 1.55 }}>{a.betragspruefung.warnung}</p>
           </div>
         )}
 
