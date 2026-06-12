@@ -30,7 +30,8 @@ Intensives Prompt-Tuning über mehrere Sessions: Analyse-Qualität getestet mit 
 ## Bekannte offene Punkte
 
 - **§-Filter wirkt nur im Text-Modus** — bei Scans/Fotos (Vision) kein Quelltext zum Abgleich, nur Prompt-Regel schützt. Größerer Umbau nötig (gelesenen Text zurückgeben).
-- **Datums-Backstop** — Prompt drängt gegen Tatdatum-als-Bescheiddatum, aber Haiku schwankt (Bußgeld-Zahlungsfrist nahm in einem Lauf das Tatdatum). Deterministischer Backstop offen.
+- **Datums-Backstop** — Prompt drängt gegen Tatdatum-als-Bescheiddatum, aber Haiku schwankt. In zwei Testläufen (12.06.) nahm Haiku das Tatdatum `am 12.05.2026 um 14:08 Uhr` als Bescheiddatum und rechnete daraus ein konkretes „Fristende 29. Mai 2026" — obwohl die Datei gar kein Bescheiddatum enthält. Deterministischer Backstop offen (Tatdatum-Kontext im Quelltext erkennen → `bescheid_datum` verwerfen, kein Fristende rechnen).
+- **Doppelte/falsch beschriftete Frist-Box** — `FristCountdown` (`ergebnis/page.tsx`) hat „Einspruchsfrist prüfen" fest verdrahtet, unabhängig vom Fristtyp. Eine `zahlung`-Frist („2 Wochen nach Rechtskraft") erhielt ebenfalls ein Datum aus dem Tatdatum und wurde als zweite „Einspruchsfrist"-Box gerendert — zusätzlich zur Zahlungstabelle. Hängt am Datums-Backstop; zusammen lösen.
 - Haiku lässt gelegentlich `fristen`-Array ganz weg (kein Crash dank Schema-Default, aber Countdown fehlt dann).
 - `console.error` Debug-Logs noch im Code (vor öffentlichem Launch entfernen)
 - Domain klaramt.app noch nicht registriert
@@ -40,7 +41,7 @@ Intensives Prompt-Tuning über mehrere Sessions: Analyse-Qualität getestet mit 
 
 ## Was als nächstes kommt
 
-1. **Datums-Backstop** (Bußgeld-Tatdatum) — deterministisch verhindern, dass Haiku das Tatdatum als Bescheiddatum nimmt
+1. **Datums-Backstop + Frist-Box** (Bußgeld-Tatdatum) — deterministisch verhindern, dass Haiku das Tatdatum als Bescheiddatum nimmt; zusammen damit die doppelte/falsch beschriftete „Einspruchsfrist"-Box beheben (`FristCountdown`-Label nach Fristtyp, `zahlung`-nach-Rechtskraft bekommt keinen Countdown)
 2. **§-Filter für Scans/Fotos** — gelesenen Vision-Text zurückgeben, damit die Paragraphen-Leitplanke auch im Vision-Modus greift (größerer Umbau)
 3. **Launch-Vorbereitung**: Debug-Logs entfernen, Domain klaramt.app, Anthropic DPA
 
@@ -50,7 +51,8 @@ Intensives Prompt-Tuning über mehrere Sessions: Analyse-Qualität getestet mit 
 
 ### Erledigt
 
-- **Summen-Prüfung (Leitplanke 3)** ✓ (2026-06-12) — neues Prompt-Feld `betragspruefung` (ausgewiesener Gesamtbetrag + wörtlich transkribierte Einzelposten). `pruefeBetragssumme()` in `lib/fristen.ts` vergleicht deterministisch: ergeben die Einzelposten nicht den Gesamtbetrag (>1 Cent Abweichung), wird `ocr_qualitaet.confidence` gesenkt und ein Hinweis in `probleme` angehängt — die bestehende OCR-Warnbox zeigt ihn. Funktioniert in Text- UND Vision-Modus (Selbstkonsistenz-Check der LLM-Transkription). Nebenbei: arithmetisch falsches Bußgeld-Beispiel im Prompt korrigiert (Geldbuße 380→360, damit 360+25+3,50=388,50 aufgeht). **Noch auf Haiku gegenzuprüfen, ob das Feld zuverlässig befüllt wird.**
+- **Summen-Prüfung (Leitplanke 3)** ✓ (2026-06-12) — neues Prompt-Feld `betragspruefung` (ausgewiesener Gesamtbetrag + wörtlich transkribierte Einzelposten). `pruefeBetragssumme()` in `lib/fristen.ts` vergleicht deterministisch: ergeben die Einzelposten nicht den Gesamtbetrag (>1 Cent Abweichung), wird der Befund in `betragspruefung.warnung` geschrieben. Funktioniert in Text- UND Vision-Modus (Selbstkonsistenz-Check der LLM-Transkription). **Auf Haiku verifiziert** (Bußgeld 100+25+3,50 vs. ausgewiesene 143,50 → Warnung erschien korrekt). Nebenbei: arithmetisch falsches Bußgeld-Beispiel im Prompt korrigiert (Geldbuße 380→360).
+- **Summen-Warnung-UX** ✓ (2026-06-12) — Befund war anfangs in `ocr_qualitaet` eingehängt → stand unscheinbar am Seitenende und hieß irreführend „Texterkennung eingeschränkt". Jetzt eigene Box (`betragspruefung.warnung`) direkt über der Zahlungstabelle. Zusätzlich Frist-Beschreibungszeile lesbarer (Grauton #9c9087→#5e564d, größer).
 - **Paragraphen-Leitplanke** ✓ (2026-06-12) — `entferneErfundeneParagraphen()` verwirft im Text-Modus jedes §/Aktenzeichen, das nicht wörtlich im Bescheidtext steht (gefährlichste Fehlerklasse, von größeren Modellen NICHT lösbar). Prompt: strikte Quellenbindung. Auf Haiku an 5 Bescheiden geprüft: echte §§ behalten, erfundene (§ 4 RStV, § 70 EStG, falsch gelabelter § 122 AO) entfernt.
 - **Datums-Regel** ✓ (2026-06-12) — bescheid_datum nur aus echtem Bescheiddatum, niemals Tatdatum/Zeitraum; kein Datum → null statt erfundenem Fristende (Prompt-seitig).
 - **Schema-Robustheit** ✓ (2026-06-12) — `eskalation` und `ocr_qualitaet` bekamen Defaults; Haiku ließ sie weg → vorher ZodError-Crash (Nutzer sah Fehler statt Ergebnis).
