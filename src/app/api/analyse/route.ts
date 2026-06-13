@@ -24,6 +24,8 @@ Analysiere das Dokument und liefere AUSSCHLIESSLICH ein JSON-Objekt zurück. Kei
     "absender": {
       "behoerde": "Name der Behörde",
       "abteilung": "Abteilung/Sachgebiet, falls erkennbar",
+      "strasse": "Straße und Hausnummer der Behörde aus dem Briefkopf, falls erkennbar — sonst leer",
+      "plz_ort": "PLZ und Ort der Behörde aus dem Briefkopf, falls erkennbar — sonst leer",
       "aktenzeichen": "Aktenzeichen/Geschäftszeichen"
     },
     "dokumenttyp": "Klassifikation. Bestätige oder korrigiere den regelbasiert erkannten Typ.",

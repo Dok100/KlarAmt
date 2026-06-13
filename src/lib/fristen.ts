@@ -38,6 +38,8 @@ export const AnalyseSchema = z.object({
     absender: z.object({
       behoerde: text,
       abteilung: text,
+      strasse: text,
+      plz_ort: text,
       aktenzeichen: text,
     }),
     dokumenttyp: text,

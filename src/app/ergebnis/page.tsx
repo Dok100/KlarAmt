@@ -7,7 +7,7 @@ import type { FristErgebnis, Zahlung } from '@/lib/fristen';
 interface ErgebnisData {
   analyse: {
     analyse: {
-      absender: { behoerde: string; abteilung: string; aktenzeichen: string };
+      absender: { behoerde: string; abteilung: string; strasse: string; plz_ort: string; aktenzeichen: string };
       dokumenttyp: string;
       risikokategorie: 'niedrig' | 'mittel' | 'hoch';
       ampel: { status: 'rot' | 'gelb' | 'gruen'; begruendung: string };
@@ -293,8 +293,8 @@ function Antwortgenerator({ a }: { a: AnalyseInhalt }) {
   const [empf, setEmpf] = useState({
     behoerde: a.absender.behoerde,
     abteilung: a.absender.abteilung,
-    strasse: '',
-    plzOrt: '',
+    strasse: a.absender.strasse,
+    plzOrt: a.absender.plz_ort,
     aktenzeichen: a.absender.aktenzeichen,
   });
 
