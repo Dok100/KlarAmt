@@ -249,7 +249,7 @@ function FristHinweis({ titel, tage }: { titel: string; tage: number | null }) {
             </p>
           )}
           <p style={{ fontSize: '0.75rem', color: '#92660f', marginTop: '0.25rem', opacity: 0.85, lineHeight: 1.5 }}>
-            Berechnet ab deinem eingegebenen Zustelldatum. Sonderfälle der Zugangsfiktion können abweichen — keine Rechtsberatung.
+            Berechnet ab dem Zustelldatum, das du eingegeben hast. Dieses Datum steht auf dem Briefumschlag — bei einem Bußgeldbescheid auf der gelben Zustellungsurkunde. Ab diesem Tag läuft die Frist. Hast du keinen Umschlag mehr, nimm den Tag, an dem der Brief bei dir ankam. Dies ist keine Rechtsberatung.
           </p>
         </div>
       )}
