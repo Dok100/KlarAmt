@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { FristErgebnis, Zahlung } from '@/lib/fristen';
+import { berechneFristende, type FristErgebnis, type Zahlung } from '@/lib/fristen';
 
 interface ErgebnisData {
   analyse: {
@@ -203,15 +203,56 @@ function FristCountdown({ frist, titel }: { frist: FristErgebnis; titel: string 
 }
 
 function FristHinweis({ titel, tage }: { titel: string; tage: number | null }) {
+  const [zustelldatum, setZustelldatum] = useState('');
   const dauer = tage ? `${tage} Tage` : 'die gesetzliche Frist';
+  // Manuelle Eingabe ist das echte Zugangsdatum — daher ohne Bekanntgabefiktion (fiktion=0),
+  // denn die Fiktion ersetzt nur ein UNBEKANNTES Zugangsdatum.
+  const berechnet = tage !== null && zustelldatum ? berechneFristende(zustelldatum, tage, 0) : null;
+  const dringend = berechnet ? berechnet.verbleibende_tage <= 7 : false;
+
   return (
     <div style={{ background: '#fdf4e0', border: '1px solid #e0c878', borderRadius: '9px', padding: '0.6875rem 0.875rem' }}>
       <p style={{ fontSize: '0.875rem', color: '#92660f', fontWeight: 600, lineHeight: 1.4 }}>
         {titel} läuft {dauer} ab Zustellung
       </p>
       <p style={{ fontSize: '0.75rem', color: '#92660f', marginTop: '0.25rem', opacity: 0.85, lineHeight: 1.5 }}>
-        Im Bescheid ist kein eindeutiges Bescheiddatum erkennbar — ein Fristende lässt sich nicht berechnen. Bitte prüfe das Zustelldatum auf deinem Original.
+        Im Bescheid ist kein eindeutiges Bescheiddatum erkennbar. Trage das Zustelldatum von deinem Briefumschlag oder Eingangsstempel ein, dann berechnet sich das Fristende.
       </p>
+      <label style={{ display: 'block', marginTop: '0.625rem' }}>
+        <span style={{ fontSize: '0.6875rem', color: '#92660f', fontWeight: 600 }}>Zustelldatum laut Briefumschlag oder Eingangsstempel</span>
+        <input
+          type="date"
+          value={zustelldatum}
+          onChange={(e) => setZustelldatum(e.target.value)}
+          style={{
+            display: 'block',
+            marginTop: '0.25rem',
+            padding: '0.5rem 0.625rem',
+            borderRadius: '8px',
+            border: '1.5px solid #e0c878',
+            background: '#fffdf8',
+            color: '#1a1814',
+            fontSize: '0.8125rem',
+            fontFamily: 'inherit',
+          }}
+        />
+      </label>
+      {berechnet && (
+        <div style={{ marginTop: '0.625rem', paddingTop: '0.625rem', borderTop: '1px solid #e0c878' }}>
+          {berechnet.abgelaufen ? (
+            <p style={{ fontSize: '0.875rem', color: '#b53d1f', fontWeight: 700, lineHeight: 1.4 }}>
+              Frist vermutlich abgelaufen — geschätztes Fristende: {formatDatum(berechnet.fristende)}
+            </p>
+          ) : (
+            <p style={{ fontSize: '0.875rem', color: dringend ? '#b53d1f' : '#92660f', fontWeight: 700, lineHeight: 1.4 }}>
+              <span style={{ fontSize: '1.25rem' }}>{berechnet.verbleibende_tage}</span> Tage bis zum Fristende ({formatDatum(berechnet.fristende)})
+            </p>
+          )}
+          <p style={{ fontSize: '0.75rem', color: '#92660f', marginTop: '0.25rem', opacity: 0.85, lineHeight: 1.5 }}>
+            Berechnet ab deinem eingegebenen Zustelldatum. Sonderfälle der Zugangsfiktion können abweichen — keine Rechtsberatung.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
