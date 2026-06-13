@@ -3,7 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 // pdf-parse v1: lib direkt laden — Haupteinstieg lädt eine Test-PDF die auf Vercel fehlt
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const pdfParse = require('pdf-parse/lib/pdf-parse') as (buf: Buffer) => Promise<{ text: string }>;
-import { stripPII } from '@/lib/pii';
+import { stripPII, extrahiereGeschaeftszeichen } from '@/lib/pii';
 import { erkenneDokumenttyp, classifyKeywords, formatVorklassifikation } from '@/lib/classifier';
 import { AnalyseSchema, verarbeiteFristen, istAntwortgenerierungErlaubt, entferneErfundeneParagraphen, pruefeBetragssumme, verwerfeTatdatumAlsBescheiddatum } from '@/lib/fristen';
 import { pruefeUndZaehle, erstatteRot, leseIp } from '@/lib/ratelimit';
@@ -354,6 +354,7 @@ export async function POST(req: NextRequest) {
   let userMessageContent: Anthropic.MessageParam['content'];
   let textGekuerzt = false;
   let quelltext: string | null = null;
+  let referenz = '';
 
   // Persönlicher Bypass: gültiges Cookie-Geheimnis hebt das Limit nur für den Inhaber auf
   const bypassSecret = process.env.RATE_LIMIT_BYPASS;
@@ -388,6 +389,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (extraktion.modus === 'text') {
+      referenz = extrahiereGeschaeftszeichen(extraktion.text);
       const saubererText = stripPII(extraktion.text);
       quelltext = saubererText;
       const dokumenttyp = erkenneDokumenttyp(saubererText);
@@ -472,6 +474,12 @@ ${textFuerAnalyse}
         parsed = entferneErfundeneParagraphen(parsed, quelltext);
         parsed = verwerfeTatdatumAlsBescheiddatum(parsed, quelltext);
         parsed = pruefeBetragssumme(parsed);
+
+        // Steuernummer/Aktenzeichen aus dem Rohtext nachtragen, falls stripPII sie vor
+        // dem Modell entfernt hat (betrifft v.a. die Steuernummer).
+        if (referenz && !parsed.analyse.absender.aktenzeichen) {
+          parsed.analyse.absender.aktenzeichen = referenz;
+        }
 
         const mitFristen = verarbeiteFristen(parsed);
         const antwortGate = istAntwortgenerierungErlaubt(parsed);

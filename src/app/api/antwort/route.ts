@@ -22,7 +22,7 @@ AUFBAU des Briefs:
 
 [ORT], [DATUM]
 
-Betreff: <kurzer Betreff mit Aktenzeichen>
+Betreff: <kurzer Betreff>[AKTENZEICHEN]
 
 Sehr geehrte Damen und Herren,
 
@@ -33,6 +33,8 @@ Mit freundlichen Grüßen
 [DEIN NAME]
 
 PERSÖNLICHE DATEN immer als Platzhalter in eckigen Klammern lassen ([DEIN NAME], [DEINE STRASSE UND HAUSNUMMER], [DEINE PLZ UND ORT], [ORT], [DATUM]). Niemals erfinden.
+
+GESCHÄFTSZEICHEN: Setze direkt hinter den Betreff den unveränderten Platzhalter [AKTENZEICHEN] (ohne Satzzeichen davor). Er wird clientseitig durch das Aktenzeichen bzw. die Steuernummer ersetzt — du kennst den Wert nicht und darfst ihn niemals erfinden.
 
 HAUPTTEIL nach Antworttyp:
 - fristverlaengerung: Höfliche Bitte um Verlängerung der Frist um zwei Wochen. Grund offenlassen: "aus organisatorischen Gründen". KEINE inhaltliche Begründung zur Sache.
@@ -65,7 +67,6 @@ export async function POST(req: NextRequest) {
     const abteilung = String(body.abteilung || '').slice(0, 200);
     const strasse = String(body.strasse || '').slice(0, 200);
     const plzOrt = String(body.plzOrt || '').slice(0, 200);
-    const aktenzeichen = String(body.aktenzeichen || '').slice(0, 100);
     const dokumenttyp = String(body.dokumenttyp || '').slice(0, 200);
     const sprache = String(body.sprache || 'Deutsch').slice(0, 40);
 
@@ -95,7 +96,6 @@ BEHÖRDE: ${behoerde}
 ABTEILUNG: ${abteilung}
 STRASSE: ${strasse}
 PLZ UND ORT: ${plzOrt}
-AKTENZEICHEN: ${aktenzeichen}
 DOKUMENTTYP: ${dokumenttyp}
 ZIELSPRACHE: ${sprache}`,
       }],

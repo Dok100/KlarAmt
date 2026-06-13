@@ -273,8 +273,8 @@ interface Absender {
   plzOrt: string;
 }
 
-// Platzhalter clientseitig ersetzen — Absenderdaten verlassen das Gerät nie
-function fuelleBrief(text: string, abs: Absender): string {
+// Platzhalter clientseitig ersetzen — Absenderdaten und Geschäftszeichen verlassen das Gerät nie
+function fuelleBrief(text: string, abs: Absender, referenzSegment: string): string {
   const rep = (s: string, suchen: string, wert: string) => (wert.trim() ? s.split(suchen).join(wert.trim()) : s);
   const d = new Date();
   const datum = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
@@ -285,6 +285,7 @@ function fuelleBrief(text: string, abs: Absender): string {
   out = rep(out, '[DEINE PLZ UND ORT]', abs.plzOrt);
   out = rep(out, '[ORT]', ort);
   out = out.split('[DATUM]').join(datum);
+  out = out.split('[AKTENZEICHEN]').join(referenzSegment);
   return out;
 }
 
@@ -377,7 +378,6 @@ function Antwortgenerator({ a }: { a: AnalyseInhalt }) {
           abteilung: empf.abteilung,
           strasse: empf.strasse,
           plzOrt: empf.plzOrt,
-          aktenzeichen: empf.aktenzeichen,
           dokumenttyp: a.dokumenttyp,
           sprache: 'Deutsch',
         }),
@@ -387,7 +387,9 @@ function Antwortgenerator({ a }: { a: AnalyseInhalt }) {
         setFehler(data.fehler || 'Die Vorlage konnte nicht erstellt werden. Bitte versuche es erneut.');
         return;
       }
-      setBrief(fuelleBrief(data.brief, absender));
+      const referenzLabel = /steuer/i.test(a.dokumenttyp) ? 'Steuernummer' : 'Aktenzeichen';
+      const referenzSegment = empf.aktenzeichen.trim() ? ` — ${referenzLabel} ${empf.aktenzeichen.trim()}` : '';
+      setBrief(fuelleBrief(data.brief, absender, referenzSegment));
     } catch {
       setFehler('Verbindungsfehler. Bitte prüfe deine Internetverbindung und versuche es erneut.');
     } finally {
@@ -580,7 +582,7 @@ function Antwortgenerator({ a }: { a: AnalyseInhalt }) {
               <Feld label="Abteilung" value={empf.abteilung} onChange={(v) => setEmpf((p) => ({ ...p, abteilung: v }))} />
               <Feld label="Straße und Hausnummer" value={empf.strasse} onChange={(v) => setEmpf((p) => ({ ...p, strasse: v }))} placeholder="aus dem Briefkopf" />
               <Feld label="PLZ und Ort" value={empf.plzOrt} onChange={(v) => setEmpf((p) => ({ ...p, plzOrt: v }))} placeholder="aus dem Briefkopf" />
-              <Feld label="Aktenzeichen" value={empf.aktenzeichen} onChange={(v) => setEmpf((p) => ({ ...p, aktenzeichen: v }))} />
+              <Feld label={/steuer/i.test(a.dokumenttyp) ? 'Steuernummer' : 'Aktenzeichen'} value={empf.aktenzeichen} onChange={(v) => setEmpf((p) => ({ ...p, aktenzeichen: v }))} placeholder="aus dem Bescheid übernehmen" />
             </div>
           </div>
           <button

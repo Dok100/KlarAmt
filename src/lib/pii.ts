@@ -21,3 +21,18 @@ export function stripPII(text: string): string {
   // Namen und Adressen: nicht per Regex (zu fehleranfällig). Post-MVP: Inkognito-Engine.
   return cleaned;
 }
+
+// Geschäftszeichen (Aktenzeichen oder Steuernummer) aus dem ROHTEXT lesen — muss VOR
+// stripPII laufen, das die Steuernummer sonst durch [STEUERNUMMER] ersetzt. Liefert den
+// reinen Wert ohne Label; bleibt clientseitig und wird nicht an die KI gesendet.
+export function extrahiereGeschaeftszeichen(text: string): string {
+  const muster = [
+    /\b(?:Aktenzeichen|Geschäftszeichen|Az\.?)\s*:?\s*([A-Za-z0-9.\-/]{4,40})/i,
+    /\bSteuernummer\s*:?\s*([\d/]{8,20})/i,
+  ];
+  for (const m of muster) {
+    const treffer = text.match(m);
+    if (treffer) return treffer[1].trim();
+  }
+  return '';
+}
