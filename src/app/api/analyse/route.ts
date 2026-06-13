@@ -30,7 +30,7 @@ Analysiere das Dokument und liefere AUSSCHLIESSLICH ein JSON-Objekt zurück. Kei
     "risikokategorie": "niedrig | mittel | hoch",
     "ampel": {
       "status": "rot | gelb | gruen",
-      "begruendung": "Max. 2 Sätze. Bei Fristen: Nenne das Bescheiddatum und weise darauf hin, dass der Nutzer es prüfen soll."
+      "begruendung": "Max. 2 Sätze. NUR bei echtem Bescheiddatum: nenne es und weise auf Prüfung hin. Ist KEIN Bescheiddatum vorhanden (z.B. Bußgeld nur mit Tatdatum): KEIN Datum als Bescheiddatum bezeichnen."
     },
     "zusammenfassung": "Max. 25 Worte, einfache Alltagssprache.",
     "erklaerung": {
@@ -244,9 +244,10 @@ REGELN:
 9. FRISTDARSTELLUNG (Vorsicht — Fehler hier haben rechtliche Konsequenzen):
    - bescheid_datum NUR aus einem echten Bescheid-/Zustelldatum. NIEMALS das Tatdatum, den Tattag, einen Leistungs- oder Abrechnungszeitraum als Bescheiddatum verwenden. Beispiel Bußgeld: "am 12.05. ... begangen" ist das TATDATUM, nicht das Bescheiddatum.
    - Ist KEIN Bescheiddatum erkennbar: bescheid_datum = null setzen und KEINE Frist schätzen. In frist_berechnung die Lücke benennen ("Kein Bescheiddatum im Dokument erkennbar — das Fristende kann nicht berechnet werden. Bitte das Zustelldatum auf dem Original prüfen."). Lieber eine offene Lücke als ein erfundenes Fristende (das fälschlich abgelaufen wirken kann).
+   - Diese Regel gilt für ALLE Freitexte (zusammenfassung, ampel.begruendung, erklaerung, handlungshinweise, frist_berechnung): Ist kein echtes Bescheiddatum vorhanden, darf KEIN Datum als "Bescheiddatum" bezeichnet werden. Das Tatdatum eines Bußgeldbescheids ("am 12.05. ... begangen") heißt im Text immer "Tatdatum", niemals "Bescheiddatum".
    - Bekanntgabefiktion: Bescheid gilt 3 Tage nach Aufgabe als zugegangen (§ 122 Abs. 2 AO) — nicht am Druckdatum.
    - Das tatsächliche Zugangsdatum ist unbekannt. Fristen können nur geschätzt werden.
-   - ampel.begruendung bei möglichem Fristablauf: NIEMALS kategorisch behaupten, die Frist sei abgelaufen. Stattdessen: "Das Bescheiddatum ist [Datum]. Die Einspruchsfrist beträgt einen Monat ab Bekanntgabe. Bitte prüfe das genaue Zugangsdatum."
+   - ampel.begruendung bei möglichem Fristablauf: NIEMALS kategorisch behaupten, die Frist sei abgelaufen. MIT echtem Bescheiddatum: "Das Bescheiddatum ist [Datum]. Die Einspruchsfrist beträgt einen Monat ab Bekanntgabe. Bitte prüfe das genaue Zugangsdatum." OHNE Bescheiddatum (nur Tatdatum, z.B. Bußgeld): kein Datum nennen, stattdessen "Die Einspruchsfrist beträgt [X] ab Zustellung. Im Bescheid ist kein Bescheiddatum erkennbar — bitte prüfe das Zustelldatum auf dem Original."
    - Vorauszahlungs-Fälligkeiten sind KEINE Einspruchsfristen — sie sind Zahlungstermine. Nicht als Einspruchsfrist codieren.
    - Fälligkeitstermine nach DATUM gruppieren. Pro Datum ein Eintrag, alle Steuerarten mit Betrag > 0 kombiniert.
    - Nur Termine NACH dem Bescheiddatum erfassen. Frühere Termine hat das Finanzamt bereits in die nächste Rate eingerechnet.
